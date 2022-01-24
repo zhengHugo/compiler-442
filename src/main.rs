@@ -1,12 +1,15 @@
+mod lexical_error;
 mod token;
 
 extern crate core;
 
-use crate::token::token::Token;
-use crate::token::token::TokenType;
-use rust_fsm::{state_machine, StateMachine, StateMachineImpl};
+use crate::lexical_error::LexicalError;
+use crate::token::Token;
+use crate::token::TokenType;
+use rust_fsm::{StateMachine, StateMachineImpl};
 use std::fs;
 
+#[derive(Debug)]
 enum State {
     Start,
     Id2,
@@ -30,6 +33,7 @@ struct Lexer {
     state_machine: StateMachine<LexerStateMachineImpl>,
     buffer: String,
     current_loc: (i32, i32),
+    output_tokens: Vec<Token>,
 }
 
 impl Lexer {
@@ -38,60 +42,101 @@ impl Lexer {
             state_machine: StateMachine::new(),
             buffer: String::from(""),
             current_loc: (0, 0),
+            output_tokens: vec![],
         }
     }
 
-    pub fn run(&mut self, source: &str) -> Vec<Token> {
-        let mut result: Vec<Token> = vec![];
-        for (i, c) in source.chars().enumerate() {
+    pub fn take(&mut self, source: &str) -> Vec<Token> {
+        // for (i, c) in source.chars().enumerate() {
+        for c in source.chars() {
             self.update_loc(&c);
             match c {
                 ' ' | '\t' | '\n' => {
-                    if !(self.buffer.is_empty()) {
-                        match self.state_machine.state() {
-                            // getting a space when reading a string. Continue
-                            State::Str2 => {
-                                self.state_machine.consume(&c).expect("Invalid input char!")
+                    if matches!(self.state_machine.state(), State::Str2) {
+                        // is reading a string now. consume the space
+                        self.state_machine.consume(&c).expect(&*format!(
+                            "Transition impossible with ({:?}, {})",
+                            State::Str2,
+                            c
+                        ));
+                    } else if !(self.buffer.is_empty()) {
+                        // if buffer has something in it, finalize a token
+                        let output_token = self.finalize_token();
+                        match output_token {
+                            Ok(token) => {
+                                self.output_tokens.push(token);
                             }
-
-                            // otherwise, get output from the state machine and reset the machine
-                            State::Id2 => result.push(Token {
-                                token_type: TokenType::Id,
-                                lexeme: self.buffer.clone(),
-                                location: self.current_loc,
-                            }),
-                            State::Str3 => result.push(Token {
-                                token_type: TokenType::String,
-                                lexeme: self.buffer.clone(),
-                                location: self.current_loc,
-                            }),
-                            State::Int12 | State::Int13 => result.push(Token {
-                                token_type: TokenType::Integer,
-                                lexeme: self.buffer.clone(),
-                                location: self.current_loc,
-                            }),
-                            State::Frac13
-                            | State::Frac14
-                            | State::Int22
-                            | State::Int23
-                            | State::Int32
-                            | State::Int33 => result.push(Token {
-                                token_type: TokenType::Float,
-                                lexeme: self.buffer.clone(),
-                                location: self.current_loc,
-                            }),
-                            _ => panic!("Invalid token error"), // TODO
-                        };
-                    } else {
+                            Err(e) => {
+                                panic!("Lexical Error found!\n {}", e);
+                            }
+                        }
                     }
                 }
                 _ => {
-                    // TODO: read normal characters
-                    let output = self.state_machine.consume(&c).expect("MESSAGE TODO");
+                    self.next_char(&c);
                 }
             }
         }
-        result
+        // when loop ends, flush out what's in the buffer
+        let output_token = self.finalize_token();
+        match output_token {
+            Ok(token) => {
+                self.output_tokens.push(token);
+            }
+            Err(e) => {
+                panic!("Lexical Error found!\n {}", e);
+            }
+        }
+        self.output_tokens.to_vec()
+    }
+
+    fn next_char(&mut self, input: &char) {
+        let consumed_result = self.state_machine.consume(input);
+        match consumed_result {
+            Ok(_output) => {
+                self.buffer.push(input.clone());
+            }
+            Err(_e) => {
+                // if transition error happens,
+                // 1. finalize the last token first
+                let output_token = self.finalize_token();
+                match output_token {
+                    Ok(token) => {
+                        self.output_tokens.push(token);
+                    }
+                    Err(e) => {
+                        panic!("Lexical Error found!\n {}", e);
+                    }
+                }
+                // 2. consume the current char
+                self.next_char(input);
+            }
+        }
+    }
+
+    // try to get a token from the current state machine
+    fn finalize_token(&mut self) -> Result<Token, LexicalError> {
+        match LexerStateMachineImpl::state_to_token_type(&self.state_machine.state()) {
+            Some(token_type) => {
+                let result = Ok(Token {
+                    token_type,
+                    lexeme: self.buffer.clone(),
+                    location: self.current_loc,
+                });
+                self.buffer.clear();
+                self.state_machine = StateMachine::from_state(State::Start);
+                result
+            }
+            None => {
+                let result = Err(LexicalError {
+                    invalid_lexeme: self.buffer.clone(),
+                    loc: self.current_loc,
+                });
+                self.buffer.clear();
+                self.state_machine = StateMachine::from_state(State::Start);
+                result
+            }
+        }
     }
 
     fn update_loc(&mut self, c: &char) {
@@ -105,18 +150,33 @@ impl Lexer {
             }
         }
     }
-
-    fn consume(&mut self, c: &char) {}
 }
 
-struct LexerStateMachineImpl {
-    buffer: String,
+struct LexerStateMachineImpl {}
+
+impl LexerStateMachineImpl {
+    fn state_to_token_type(
+        state: &<LexerStateMachineImpl as StateMachineImpl>::State,
+    ) -> Option<<LexerStateMachineImpl as StateMachineImpl>::Output> {
+        match state {
+            State::Id2 => Some(TokenType::Id),
+            State::Str3 => Some(TokenType::Str),
+            State::Int12 | State::Int13 => Some(TokenType::Integer),
+            State::Frac13
+            | State::Frac14
+            | State::Int22
+            | State::Int23
+            | State::Int32
+            | State::Int33 => Some(TokenType::Float),
+            _ => None,
+        }
+    }
 }
 
 impl StateMachineImpl for LexerStateMachineImpl {
     type Input = char;
     type State = State;
-    type Output = Token;
+    type Output = TokenType;
 
     const INITIAL_STATE: Self::State = State::Start;
 
@@ -147,17 +207,40 @@ impl StateMachineImpl for LexerStateMachineImpl {
             (State::Int31, '0') => Some(State::Int32),
             (State::Int31, '1'..='9') => Some(State::Int33),
             (State::Int33, '0'..='9') => Some(State::Int33),
-            (_, _) => None,
+            _ => None,
         }
     }
 
     fn output(state: &Self::State, input: &Self::Input) -> Option<Self::Output> {
-        todo!()
+        let next_state = Self::transition(state, input).expect("Unhandled transition error");
+        LexerStateMachineImpl::state_to_token_type(&next_state)
+        // match (state, input) {
+        //     (State::Start, '0') => Some(TokenType::Integer),
+        //     (State::Start, '1'..='9') => Some(TokenType::Integer),
+        //     (State::Start, 'A'..='Z' | 'a'..='z') => Some(TokenType::Id),
+        //     (State::Id2, 'A'..='Z' | 'a'..='z' | '0'..='9' | '_') => Some(TokenType::Id),
+        //     (State::Str2, '"') => Some(TokenType::Str),
+        //     (State::Int13, '0'..='9') => Some(TokenType::Integer),
+        //     (State::Frac12, '0') => Some(TokenType::Float),
+        //     (State::Frac12, '1'..='9') => Some(TokenType::Float),
+        //     (State::Frac13, '1'..='9') => Some(TokenType::Float),
+        //     (State::Frac14, '1'..='9') => Some(TokenType::Float),
+        //     (State::Frac15, '1'..='9') => Some(TokenType::Float),
+        //     (State::Int21, '0') => Some(TokenType::Float),
+        //     (State::Int21, '1'..='9') => Some(TokenType::Float),
+        //     (State::Int23, '0'..='9') => Some(TokenType::Float),
+        //     (State::Int31, '0') => Some(TokenType::Float),
+        //     (State::Int31, '1'..='9') => Some(TokenType::Float),
+        //     (State::Int33, '0'..='9') => Some(TokenType::Float),
+        //     _ => None,
+        // }
     }
 }
 
 fn main() {
-    static SOURCE: String =
+    let source: String =
         fs::read_to_string("sample.src").expect("Something went wrong reading the file");
-    let lexer: Lexer = Lexer::new();
+    let mut lexer: Lexer = Lexer::new();
+    let result = lexer.take(&source);
+    println!("{:?}", result);
 }
