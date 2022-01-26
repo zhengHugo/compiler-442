@@ -8,8 +8,7 @@ use crate::lexer_machine_impl::LexerStateMachineImpl;
 use crate::lexer_machine_impl::State;
 use crate::lexical_error::LexicalError;
 use crate::token::Token;
-use crate::token::TokenType;
-use rust_fsm::{StateMachine, StateMachineImpl};
+use rust_fsm::StateMachine;
 use std::fs;
 
 struct Lexer {
@@ -36,7 +35,7 @@ impl Lexer {
         for c in source.chars() {
             self.update_loc(&c);
             match c {
-                ' ' | '\t' | '\n' => {
+                ' ' | '\t' | '\n' | '\r' => {
                     if matches!(self.state_machine.state(), State::Str2) {
                         // is reading a string now. consume the space
                         self.state_machine.consume(&c).expect(&*format!(
@@ -50,6 +49,7 @@ impl Lexer {
                         match output_token {
                             Ok(token) => {
                                 self.output_tokens.push(token);
+                                println!("{}", self.output_tokens[self.output_tokens.len() - 1])
                             }
                             Err(e) => {
                                 panic!("Lexical Error found!\n {}", e);
@@ -63,13 +63,15 @@ impl Lexer {
             }
         }
         // when loop ends, flush out what's in the buffer
-        let output_token = self.finalize_token();
-        match output_token {
-            Ok(token) => {
-                self.output_tokens.push(token);
-            }
-            Err(e) => {
-                panic!("Lexical Error found!\n {}", e);
+        if !(self.buffer.is_empty()) {
+            let output_token = self.finalize_token();
+            match output_token {
+                Ok(token) => {
+                    self.output_tokens.push(token);
+                }
+                Err(e) => {
+                    panic!("Lexical Error found!\n {}", e);
+                }
             }
         }
     }
@@ -146,9 +148,13 @@ impl Lexer {
 }
 
 fn main() {
-    let source: String =
-        fs::read_to_string("sample.src").expect("Something went wrong reading the file");
+    let source: String = fs::read_to_string("lexpositivegrading.src")
+        .expect("Something went wrong reading the file");
     let mut lexer: Lexer = Lexer::new();
-    let result = lexer.read_source(&source);
-    println!("{:?}", result);
+    lexer.read_source(&source);
+    let mut token = lexer.next_token();
+    while token.is_some() {
+        // println!("{}", token.expect("Not a token!"));
+        token = lexer.next_token();
+    }
 }

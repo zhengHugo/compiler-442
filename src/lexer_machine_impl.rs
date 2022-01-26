@@ -1,8 +1,5 @@
-use crate::lexical_error::LexicalError;
-use crate::token::Token;
 use crate::token::TokenType;
-use rust_fsm::{StateMachine, StateMachineImpl};
-use std::fs;
+use rust_fsm::StateMachineImpl;
 
 #[derive(Debug)]
 pub(crate) enum State {
@@ -344,7 +341,6 @@ impl StateMachineImpl for LexerStateMachineImpl {
             (State::KwRe, 'a') => Some(State::KwRea),
             (State::KwRea, 'd') => Some(State::KwRead),
 
-            (State::KwR, 'e') => Some(State::KwRe),
             (State::KwRe, 't') => Some(State::KwRet),
             (State::KwRet, 'u') => Some(State::KwRetu),
             (State::KwRetu, 'r') => Some(State::KwRetur),
