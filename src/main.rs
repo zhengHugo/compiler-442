@@ -5,6 +5,7 @@ mod token;
 extern crate core;
 
 use crate::lexer_machine_impl::LexerStateMachineImpl;
+use crate::lexer_machine_impl::State;
 use crate::lexical_error::LexicalError;
 use crate::token::Token;
 use crate::token::TokenType;
@@ -16,7 +17,7 @@ struct Lexer {
     buffer: String,
     current_loc: (i32, i32),
     output_tokens: Vec<Token>,
-    output_index: u32,
+    output_index: usize,
 }
 
 impl Lexer {
@@ -75,9 +76,9 @@ impl Lexer {
 
     pub fn next_token(&mut self) -> Option<Token> {
         if self.output_index < self.output_tokens.len() {
-            let result_token = self.output_tokens[self.output_index];
+            let result_token = self.output_tokens[self.output_index].clone();
             self.output_index += 1;
-            Some(result_token)
+            return Some(result_token);
         }
         None
     }

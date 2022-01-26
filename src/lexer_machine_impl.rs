@@ -5,7 +5,7 @@ use rust_fsm::{StateMachine, StateMachineImpl};
 use std::fs;
 
 #[derive(Debug)]
-enum State {
+pub(crate) enum State {
     Start,
 
     // atomic lexical elements
@@ -169,6 +169,56 @@ impl LexerStateMachineImpl {
         state: &<LexerStateMachineImpl as StateMachineImpl>::State,
     ) -> Option<<LexerStateMachineImpl as StateMachineImpl>::Output> {
         match state {
+            // operators
+            State::Eq => Some(TokenType::Eq),
+            State::NotEq => Some(TokenType::NotEq),
+            State::Lt => Some(TokenType::Lt),
+            State::Gt => Some(TokenType::Gt),
+            State::Leq => Some(TokenType::Leq),
+            State::Geq => Some(TokenType::Geq),
+            State::Plus => Some(TokenType::Plus),
+            State::Minus => Some(TokenType::Minus),
+            State::Mult => Some(TokenType::Mult),
+            State::Div => Some(TokenType::Div),
+            State::Assign => Some(TokenType::Assign),
+            State::Or => Some(TokenType::Or),
+            State::And => Some(TokenType::And),
+            State::Not => Some(TokenType::Not),
+            State::OpenPar => Some(TokenType::OpenPar),
+            State::ClosePar => Some(TokenType::ClosePar),
+            State::OpenCuBr => Some(TokenType::OpenCuBr),
+            State::CloseCuBr => Some(TokenType::CloseCuBr),
+            State::OpenSqBr => Some(TokenType::OpenSqBr),
+            State::CloseSqBr => Some(TokenType::CloseSqBr),
+            State::Semi => Some(TokenType::Semi),
+            State::Comma => Some(TokenType::Comma),
+            State::Dot => Some(TokenType::Dot),
+            State::Colon => Some(TokenType::Colon),
+            State::ColonColon => Some(TokenType::ColonColon),
+            State::Arrow => Some(TokenType::Arrow),
+
+            // keywords
+            State::KwIf => Some(TokenType::KwIf),
+            State::KwThen => Some(TokenType::KwThen),
+            State::KwElse => Some(TokenType::KwElse),
+            State::KwInteger => Some(TokenType::KwInteger),
+            State::KwFloat => Some(TokenType::KwFloat),
+            State::KwVoid => Some(TokenType::KwVoid),
+            State::KwPublic => Some(TokenType::KwPublic),
+            State::KwPrivate => Some(TokenType::KwPrivate),
+            State::KwFunc => Some(TokenType::KwFunc),
+            State::KwVar => Some(TokenType::KwVar),
+            State::KwStruct => Some(TokenType::KwStruct),
+            State::KwWhile => Some(TokenType::KwWhile),
+            State::KwRead => Some(TokenType::KwRead),
+            State::KwWrite => Some(TokenType::KwWrite),
+            State::KwReturn => Some(TokenType::KwReturn),
+            State::KwSelf => Some(TokenType::KwSelf),
+            State::KwInherits => Some(TokenType::KwInherits),
+            State::KwLet => Some(TokenType::KwLet),
+            State::KwImpl => Some(TokenType::KwImpl),
+
+            // atomic elements
             State::Id2 => Some(TokenType::Id),
             State::Str3 => Some(TokenType::Str),
             State::Int12 | State::Int13 => Some(TokenType::Integer),
@@ -178,6 +228,7 @@ impl LexerStateMachineImpl {
             | State::Int23
             | State::Int32
             | State::Int33 => Some(TokenType::Float),
+
             _ => None,
         }
     }
@@ -192,59 +243,6 @@ impl StateMachineImpl for LexerStateMachineImpl {
 
     fn transition(state: &Self::State, input: &Self::Input) -> Option<Self::State> {
         match (state, input) {
-            // atomic lexical elements
-            (State::Start, '0') => Some(State::Int12),
-            (State::Start, '1'..='9') => Some(State::Int13),
-            (State::Start, 'A'..='Z' | 'a'..='z') => Some(State::Id2),
-            (State::Start, '"') => Some(State::Str2),
-            (State::Id2, 'A'..='Z' | 'a'..='z' | '0'..='9' | '_') => Some(State::Id2),
-            (State::Str2, 'A'..='Z' | 'a'..='z' | '0'..='9' | '_' | ' ') => Some(State::Str2),
-            (State::Str2, '"') => Some(State::Str3),
-            (State::Int12 | State::Int13, '.') => Some(State::Frac12),
-            (State::Int13, '0'..='9') => Some(State::Int13),
-            (State::Frac12, '0') => Some(State::Frac14),
-            (State::Frac12, '1'..='9') => Some(State::Frac13),
-            (State::Frac13, '0') => Some(State::Frac15),
-            (State::Frac13, '1'..='9') => Some(State::Frac13),
-            (State::Frac14, '0') => Some(State::Frac15),
-            (State::Frac14, '1'..='9') => Some(State::Frac14),
-            (State::Frac15, '0') => Some(State::Frac15),
-            (State::Frac15, '1'..='9') => Some(State::Frac14),
-            (State::Frac13 | State::Frac14, 'e') => Some(State::Int21),
-            (State::Int21, '0') => Some(State::Int22),
-            (State::Int21, '+' | '-') => Some(State::Int31),
-            (State::Int21, '1'..='9') => Some(State::Int23),
-            (State::Int23, '0'..='9') => Some(State::Int23),
-            (State::Int31, '0') => Some(State::Int32),
-            (State::Int31, '1'..='9') => Some(State::Int33),
-            (State::Int33, '0'..='9') => Some(State::Int33),
-            // operators
-            (State::Start, '=') => Some(State::Assign),
-            (State::Assign, '=') => Some(State::Eq),
-            (State::Start, '<') => Some(State::Lt),
-            (State::Lt, '>') => Some(State::NotEq),
-            (State::Lt, '=') => Some(State::Leq),
-            (State::Start, '>') => Some(State::Gt),
-            (State::Gt, '=') => Some(State::Geq),
-            (State::Start, '+') => Some(State::Plus),
-            (State::Start, '-') => Some(State::Minus),
-            (State::Minus, '>') => Some(State::Arrow),
-            (State::Start, '*') => Some(State::Mult),
-            (State::Start, '/') => Some(State::Div),
-            (State::Start, '|') => Some(State::Or),
-            (State::Start, '&') => Some(State::And),
-            (State::Start, '!') => Some(State::Not),
-            (State::Start, '(') => Some(State::OpenPar),
-            (State::Start, ')') => Some(State::ClosePar),
-            (State::Start, '{') => Some(State::OpenCuBr),
-            (State::Start, '}') => Some(State::CloseCuBr),
-            (State::Start, '[') => Some(State::OpenSqBr),
-            (State::Start, ']') => Some(State::CloseSqBr),
-            (State::Start, ';') => Some(State::Semi),
-            (State::Start, ',') => Some(State::Comma),
-            (State::Start, '.') => Some(State::Dot),
-            (State::Start, ':') => Some(State::Colon),
-            (State::Colon, ':') => Some(State::ColonColon),
             // keywords
             (State::Start, 'i') => Some(State::KwI),
 
@@ -356,6 +354,146 @@ impl StateMachineImpl for LexerStateMachineImpl {
             (State::Start, 'l') => Some(State::KwL),
             (State::KwL, 'e') => Some(State::KwLe),
             (State::KwLe, 't') => Some(State::KwLet),
+
+            // keywords to id
+            (
+                State::KwI
+                | State::KwIf
+                | State::KwIn
+                | State::KwInt
+                | State::KwInte
+                | State::KwInteg
+                | State::KwIntege
+                | State::KwInteger
+                | State::KwInh
+                | State::KwInhe
+                | State::KwInher
+                | State::KwInheri
+                | State::KwInherit
+                | State::KwInherits
+                | State::KwIm
+                | State::KwImp
+                | State::KwImpl
+                | State::KwT
+                | State::KwTh
+                | State::KwThe
+                | State::KwThen
+                | State::KwE
+                | State::KwEl
+                | State::KwEls
+                | State::KwElse
+                | State::KwF
+                | State::KwFl
+                | State::KwFlo
+                | State::KwFloa
+                | State::KwFloat
+                | State::KwFu
+                | State::KwFun
+                | State::KwFunc
+                | State::KwV
+                | State::KwVo
+                | State::KwVoi
+                | State::KwVoid
+                | State::KwVa
+                | State::KwVar
+                | State::KwP
+                | State::KwPu
+                | State::KwPub
+                | State::KwPubl
+                | State::KwPubli
+                | State::KwPublic
+                | State::KwPr
+                | State::KwPri
+                | State::KwPriv
+                | State::KwPriva
+                | State::KwPrivat
+                | State::KwPrivate
+                | State::KwS
+                | State::KwSt
+                | State::KwStr
+                | State::KwStru
+                | State::KwStruc
+                | State::KwStruct
+                | State::KwSe
+                | State::KwSel
+                | State::KwSelf
+                | State::KwW
+                | State::KwWh
+                | State::KwWhi
+                | State::KwWhil
+                | State::KwWhile
+                | State::KwWr
+                | State::KwWri
+                | State::KwWrit
+                | State::KwWrite
+                | State::KwR
+                | State::KwRe
+                | State::KwRea
+                | State::KwRead
+                | State::KwRet
+                | State::KwRetu
+                | State::KwRetur
+                | State::KwReturn
+                | State::KwL
+                | State::KwLe
+                | State::KwLet,
+                'A'..='Z' | 'a'..='z' | '0'..='9' | '_',
+            ) => Some(State::Id2),
+
+            // atomic lexical elements
+            (State::Start, '0') => Some(State::Int12),
+            (State::Start, '1'..='9') => Some(State::Int13),
+            (State::Start, 'A'..='Z' | 'a'..='z') => Some(State::Id2),
+            (State::Start, '"') => Some(State::Str2),
+            (State::Id2, 'A'..='Z' | 'a'..='z' | '0'..='9' | '_') => Some(State::Id2),
+            (State::Str2, 'A'..='Z' | 'a'..='z' | '0'..='9' | '_' | ' ') => Some(State::Str2),
+            (State::Str2, '"') => Some(State::Str3),
+            (State::Int12 | State::Int13, '.') => Some(State::Frac12),
+            (State::Int13, '0'..='9') => Some(State::Int13),
+            (State::Frac12, '0') => Some(State::Frac14),
+            (State::Frac12, '1'..='9') => Some(State::Frac13),
+            (State::Frac13, '0') => Some(State::Frac15),
+            (State::Frac13, '1'..='9') => Some(State::Frac13),
+            (State::Frac14, '0') => Some(State::Frac15),
+            (State::Frac14, '1'..='9') => Some(State::Frac14),
+            (State::Frac15, '0') => Some(State::Frac15),
+            (State::Frac15, '1'..='9') => Some(State::Frac14),
+            (State::Frac13 | State::Frac14, 'e') => Some(State::Int21),
+            (State::Int21, '0') => Some(State::Int22),
+            (State::Int21, '+' | '-') => Some(State::Int31),
+            (State::Int21, '1'..='9') => Some(State::Int23),
+            (State::Int23, '0'..='9') => Some(State::Int23),
+            (State::Int31, '0') => Some(State::Int32),
+            (State::Int31, '1'..='9') => Some(State::Int33),
+            (State::Int33, '0'..='9') => Some(State::Int33),
+
+            // operators
+            (State::Start, '=') => Some(State::Assign),
+            (State::Assign, '=') => Some(State::Eq),
+            (State::Start, '<') => Some(State::Lt),
+            (State::Lt, '>') => Some(State::NotEq),
+            (State::Lt, '=') => Some(State::Leq),
+            (State::Start, '>') => Some(State::Gt),
+            (State::Gt, '=') => Some(State::Geq),
+            (State::Start, '+') => Some(State::Plus),
+            (State::Start, '-') => Some(State::Minus),
+            (State::Minus, '>') => Some(State::Arrow),
+            (State::Start, '*') => Some(State::Mult),
+            (State::Start, '/') => Some(State::Div),
+            (State::Start, '|') => Some(State::Or),
+            (State::Start, '&') => Some(State::And),
+            (State::Start, '!') => Some(State::Not),
+            (State::Start, '(') => Some(State::OpenPar),
+            (State::Start, ')') => Some(State::ClosePar),
+            (State::Start, '{') => Some(State::OpenCuBr),
+            (State::Start, '}') => Some(State::CloseCuBr),
+            (State::Start, '[') => Some(State::OpenSqBr),
+            (State::Start, ']') => Some(State::CloseSqBr),
+            (State::Start, ';') => Some(State::Semi),
+            (State::Start, ',') => Some(State::Comma),
+            (State::Start, '.') => Some(State::Dot),
+            (State::Start, ':') => Some(State::Colon),
+            (State::Colon, ':') => Some(State::ColonColon),
 
             _ => None,
         }
