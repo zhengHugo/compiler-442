@@ -166,6 +166,7 @@ pub(crate) enum State {
 pub(crate) struct LexerStateMachineImpl {}
 
 impl LexerStateMachineImpl {
+    /// Return a token type based on the current machine state
     pub(crate) fn state_to_token_type(
         state: &<LexerStateMachineImpl as StateMachineImpl>::State,
     ) -> TokenType {

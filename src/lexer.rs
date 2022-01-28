@@ -33,6 +33,7 @@ impl Lexer {
         }
     }
 
+    /// input a source file and generate tokens
     pub fn read_source(&mut self, source: &str) {
         // for (i, c) in source.chars().enumerate() {
         for c in source.chars() {
@@ -87,21 +88,19 @@ impl Lexer {
             }
             match (self.state_machine.state(), c) {
                 (_, '\n' | '\r') => {
+                    // handle line breaks as token boundaries
                     if !self.buffer.is_empty() {
                         // if buffer has something in it, finalize a token
                         let token_result = self.finalize_token(Some(&c));
                         self.handle_finalized_token(token_result);
                     }
                 }
-                (State::Str2, ' ' | '\t') => {
-                    // is reading a string now. consume the space
-                    self.next_char(&c);
-                }
-                (State::InlineCmt, ' ' | '\t') => {
-                    // in a inline comment. consume the space
+                (State::Str2 | State::InlineCmt, ' ' | '\t') => {
+                    // is reading a string or in a inline comment. consume the space
                     self.next_char(&c);
                 }
                 (_, ' ' | '\t') => {
+                    // handle spaces as token boundaries
                     if !(self.buffer.is_empty()) {
                         // if buffer has something in it, finalize a token
                         let token_result = self.finalize_token(Some(&c));
@@ -125,6 +124,7 @@ impl Lexer {
         }
     }
 
+    /// Returns the next token from output tokens
     pub fn next_token(&mut self) -> Option<Token> {
         if self.output_index < self.output_tokens.len() {
             let result_token = self.output_tokens[self.output_index].clone();
@@ -134,6 +134,7 @@ impl Lexer {
         None
     }
 
+    // push a token into the result token vector, possibly giving a lexical error
     fn handle_finalized_token(&mut self, token: Token) -> Option<LexicalError> {
         match token.token_type {
             TokenType::ValidTokenType(_) => {
@@ -153,6 +154,7 @@ impl Lexer {
         }
     }
 
+    // input the next char into the lexer
     fn next_char(&mut self, input: &char) {
         let consumed_result = self.state_machine.consume(input);
         match consumed_result {
@@ -162,10 +164,10 @@ impl Lexer {
             }
             Err(_e) => {
                 // if transition error happens,
-                // 1. finalize the last token first
+                // 1. finalize the last token
                 let token_result = self.finalize_token(Some(input));
                 let some_error = self.handle_finalized_token(token_result);
-                // 2. consume the current char
+                // 2. if it is not the first character causing the error, consume the current char
                 match some_error {
                     Some(e) if e.error_type == InvalidTokenType::InvalidChar => {}
                     _ => self.next_char(input),
@@ -174,6 +176,7 @@ impl Lexer {
         }
     }
 
+    /// Return a token from the lexer in current state, and reset the state machine
     fn finalize_token(&mut self, input: Option<&char>) -> Token {
         if self.block_depth > 0 {
             // try to finalize an unterminated block comment
@@ -219,52 +222,6 @@ impl Lexer {
             }
         }
     }
-    // try to get a token from the current state machine
-    // fn finalize_token(&mut self, input: Option<&char>) -> Result<Token, LexicalError> {
-    //     if self.block_depth > 0 {
-    //         // try to finalize an unterminated block comment
-    //         let result = Err(LexicalError {
-    //             error_type: InvalidTokenType::UnterminatedBlockCmt,
-    //             invalid_lexeme: self.buffer.clone(),
-    //             loc: self.start_loc,
-    //         });
-    //         self.buffer.clear();
-    //         self.state_machine = StateMachine::new();
-    //         return result;
-    //     }
-    //     match LexerStateMachineImpl::state_to_token_type(&self.state_machine.state()) {
-    //         TokenType::ValidTokenType(valid_token_type) => {
-    //             let result = Ok(Token {
-    //                 token_type: TokenType::ValidTokenType(valid_token_type),
-    //                 lexeme: self.buffer.clone(),
-    //                 location: self.start_loc,
-    //             });
-    //             self.buffer.clear();
-    //             self.state_machine = StateMachine::from_state(State::Start);
-    //             result
-    //         }
-    //         TokenType::InvalidTokenType(invalid_token_type) => {
-    //             let result = match invalid_token_type {
-    //                 InvalidTokenType::InvalidChar => Err(LexicalError {
-    //                     error_type: InvalidTokenType::InvalidChar,
-    //                     invalid_lexeme: input
-    //                         .expect("Try to create a InvalidChar error but missing input char")
-    //                         .clone()
-    //                         .to_string(),
-    //                     loc: self.start_loc,
-    //                 }),
-    //                 _ => Err(LexicalError {
-    //                     error_type: invalid_token_type,
-    //                     invalid_lexeme: self.buffer.clone(),
-    //                     loc: self.start_loc,
-    //                 }),
-    //             };
-    //             self.buffer.clear();
-    //             self.state_machine = StateMachine::from_state(State::Start);
-    //             result
-    //         }
-    //     }
-    // }
 
     fn update_loc(&mut self, c: &char) {
         if matches!(self.state_machine.state(), State::Start) {

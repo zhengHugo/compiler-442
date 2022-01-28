@@ -125,13 +125,3 @@ impl Display for Token {
         )
     }
 }
-
-// impl Clone for Token {
-//     fn clone(&self) -> Self {
-//         Token {
-//             token_type: self.token_type.,
-//             lexeme: self.lexeme.clone(),
-//             location: self.location,
-//         }
-//     }
-// }
