@@ -13,13 +13,18 @@ use crate::token::Token;
 use std::fs;
 
 fn main() {
-    let source: String = fs::read_to_string("lexpositivegrading.src")
-        .expect("Something went wrong reading the file");
-    let mut lexer: Lexer = Lexer::new();
-    lexer.read_source(&source);
-    let mut token = lexer.next_token();
-    while token.is_some() {
-        // println!("{}", token.expect("Not a token!"));
-        token = lexer.next_token();
+    let input_files = ["lexnegativegrading", "lexpositivegrading"];
+    for input_file in input_files {
+        let source: String = fs::read_to_string(input_file.to_owned() + ".src")
+            .expect("Something went wrong reading the file");
+        let mut lexer: Lexer = Lexer::new();
+        lexer.read_source(&source);
+        loop {
+            let token = lexer.next_token();
+            if token.is_none() {
+                break;
+            }
+            println!("{}", token.unwrap());
+        }
     }
 }

@@ -1,13 +1,22 @@
 use std::fmt;
-use std::fmt::Formatter;
+use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Debug, Clone)]
 pub enum TokenType {
+    ValidTokenType(ValidTokenType),
+    InvalidTokenType(InvalidTokenType),
+}
+
+#[derive(Debug, Clone)]
+pub enum ValidTokenType {
     Id,
     Integer,
     Float,
     Str,
+    InlineCmt,
+    BlockCmt,
 
+    // operators
     Eq,
     NotEq,
     Lt,
@@ -35,6 +44,7 @@ pub enum TokenType {
     ColonColon,
     Arrow,
 
+    // keywords
     KwIf,
     KwThen,
     KwElse,
@@ -56,22 +66,63 @@ pub enum TokenType {
     KwImpl,
 }
 
-impl fmt::Display for TokenType {
+impl fmt::Display for ValidTokenType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
+pub enum InvalidTokenType {
+    InvalidNumber,
+    InvalidChar,
+    UnterminatedBlockCmt,
+    Other,
+}
+
+impl fmt::Display for InvalidTokenType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl fmt::Display for TokenType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                TokenType::ValidTokenType(valid) => valid.to_string(),
+                TokenType::InvalidTokenType(invalid) => invalid.to_string(),
+            }
+        )
+    }
+}
+
+#[derive(Clone)]
 pub struct Token {
     pub(crate) token_type: TokenType,
     pub(crate) lexeme: String,
-    pub(crate) location: (i32, i32),
+    pub(crate) location: (u32, u32),
 }
 
-impl fmt::Display for Token {
+impl Debug for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "[{}:{}]", self.token_type, self.lexeme)
+        write!(
+            f,
+            "[{}, {}, {}]",
+            self.token_type, self.lexeme, self.location.0
+        )
+    }
+}
+
+impl Display for Token {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "[{}, {}, {}]",
+            self.token_type, self.lexeme, self.location.0
+        )
     }
 }
 

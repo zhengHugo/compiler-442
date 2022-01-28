@@ -1,9 +1,13 @@
-use crate::token::TokenType;
+use crate::token::{InvalidTokenType, TokenType, ValidTokenType};
 use rust_fsm::StateMachineImpl;
 
 #[derive(Debug)]
 pub(crate) enum State {
     Start,
+
+    // comment
+    InlineCmt,
+    BlockCmt,
 
     // atomic lexical elements
     Id2,
@@ -164,70 +168,88 @@ pub(crate) struct LexerStateMachineImpl {}
 impl LexerStateMachineImpl {
     pub(crate) fn state_to_token_type(
         state: &<LexerStateMachineImpl as StateMachineImpl>::State,
-    ) -> Option<<LexerStateMachineImpl as StateMachineImpl>::Output> {
-        match state {
+    ) -> TokenType {
+        let valid_token_type = match state {
             // operators
-            State::Eq => Some(TokenType::Eq),
-            State::NotEq => Some(TokenType::NotEq),
-            State::Lt => Some(TokenType::Lt),
-            State::Gt => Some(TokenType::Gt),
-            State::Leq => Some(TokenType::Leq),
-            State::Geq => Some(TokenType::Geq),
-            State::Plus => Some(TokenType::Plus),
-            State::Minus => Some(TokenType::Minus),
-            State::Mult => Some(TokenType::Mult),
-            State::Div => Some(TokenType::Div),
-            State::Assign => Some(TokenType::Assign),
-            State::Or => Some(TokenType::Or),
-            State::And => Some(TokenType::And),
-            State::Not => Some(TokenType::Not),
-            State::OpenPar => Some(TokenType::OpenPar),
-            State::ClosePar => Some(TokenType::ClosePar),
-            State::OpenCuBr => Some(TokenType::OpenCuBr),
-            State::CloseCuBr => Some(TokenType::CloseCuBr),
-            State::OpenSqBr => Some(TokenType::OpenSqBr),
-            State::CloseSqBr => Some(TokenType::CloseSqBr),
-            State::Semi => Some(TokenType::Semi),
-            State::Comma => Some(TokenType::Comma),
-            State::Dot => Some(TokenType::Dot),
-            State::Colon => Some(TokenType::Colon),
-            State::ColonColon => Some(TokenType::ColonColon),
-            State::Arrow => Some(TokenType::Arrow),
+            State::Eq => Some(ValidTokenType::Eq),
+            State::NotEq => Some(ValidTokenType::NotEq),
+            State::Lt => Some(ValidTokenType::Lt),
+            State::Gt => Some(ValidTokenType::Gt),
+            State::Leq => Some(ValidTokenType::Leq),
+            State::Geq => Some(ValidTokenType::Geq),
+            State::Plus => Some(ValidTokenType::Plus),
+            State::Minus => Some(ValidTokenType::Minus),
+            State::Mult => Some(ValidTokenType::Mult),
+            State::Div => Some(ValidTokenType::Div),
+            State::Assign => Some(ValidTokenType::Assign),
+            State::Or => Some(ValidTokenType::Or),
+            State::And => Some(ValidTokenType::And),
+            State::Not => Some(ValidTokenType::Not),
+            State::OpenPar => Some(ValidTokenType::OpenPar),
+            State::ClosePar => Some(ValidTokenType::ClosePar),
+            State::OpenCuBr => Some(ValidTokenType::OpenCuBr),
+            State::CloseCuBr => Some(ValidTokenType::CloseCuBr),
+            State::OpenSqBr => Some(ValidTokenType::OpenSqBr),
+            State::CloseSqBr => Some(ValidTokenType::CloseSqBr),
+            State::Semi => Some(ValidTokenType::Semi),
+            State::Comma => Some(ValidTokenType::Comma),
+            State::Dot => Some(ValidTokenType::Dot),
+            State::Colon => Some(ValidTokenType::Colon),
+            State::ColonColon => Some(ValidTokenType::ColonColon),
+            State::Arrow => Some(ValidTokenType::Arrow),
 
             // keywords
-            State::KwIf => Some(TokenType::KwIf),
-            State::KwThen => Some(TokenType::KwThen),
-            State::KwElse => Some(TokenType::KwElse),
-            State::KwInteger => Some(TokenType::KwInteger),
-            State::KwFloat => Some(TokenType::KwFloat),
-            State::KwVoid => Some(TokenType::KwVoid),
-            State::KwPublic => Some(TokenType::KwPublic),
-            State::KwPrivate => Some(TokenType::KwPrivate),
-            State::KwFunc => Some(TokenType::KwFunc),
-            State::KwVar => Some(TokenType::KwVar),
-            State::KwStruct => Some(TokenType::KwStruct),
-            State::KwWhile => Some(TokenType::KwWhile),
-            State::KwRead => Some(TokenType::KwRead),
-            State::KwWrite => Some(TokenType::KwWrite),
-            State::KwReturn => Some(TokenType::KwReturn),
-            State::KwSelf => Some(TokenType::KwSelf),
-            State::KwInherits => Some(TokenType::KwInherits),
-            State::KwLet => Some(TokenType::KwLet),
-            State::KwImpl => Some(TokenType::KwImpl),
+            State::KwIf => Some(ValidTokenType::KwIf),
+            State::KwThen => Some(ValidTokenType::KwThen),
+            State::KwElse => Some(ValidTokenType::KwElse),
+            State::KwInteger => Some(ValidTokenType::KwInteger),
+            State::KwFloat => Some(ValidTokenType::KwFloat),
+            State::KwVoid => Some(ValidTokenType::KwVoid),
+            State::KwPublic => Some(ValidTokenType::KwPublic),
+            State::KwPrivate => Some(ValidTokenType::KwPrivate),
+            State::KwFunc => Some(ValidTokenType::KwFunc),
+            State::KwVar => Some(ValidTokenType::KwVar),
+            State::KwStruct => Some(ValidTokenType::KwStruct),
+            State::KwWhile => Some(ValidTokenType::KwWhile),
+            State::KwRead => Some(ValidTokenType::KwRead),
+            State::KwWrite => Some(ValidTokenType::KwWrite),
+            State::KwReturn => Some(ValidTokenType::KwReturn),
+            State::KwSelf => Some(ValidTokenType::KwSelf),
+            State::KwInherits => Some(ValidTokenType::KwInherits),
+            State::KwLet => Some(ValidTokenType::KwLet),
+            State::KwImpl => Some(ValidTokenType::KwImpl),
 
             // atomic elements
-            State::Id2 => Some(TokenType::Id),
-            State::Str3 => Some(TokenType::Str),
-            State::Int12 | State::Int13 => Some(TokenType::Integer),
+            State::Id2 => Some(ValidTokenType::Id),
+            State::Str3 => Some(ValidTokenType::Str),
+            State::Int12 | State::Int13 => Some(ValidTokenType::Integer),
             State::Frac13
             | State::Frac14
             | State::Int22
             | State::Int23
             | State::Int32
-            | State::Int33 => Some(TokenType::Float),
+            | State::Int33 => Some(ValidTokenType::Float),
 
+            // comments
+            State::InlineCmt => Some(ValidTokenType::InlineCmt),
+            State::BlockCmt => Some(ValidTokenType::BlockCmt),
             _ => None,
-        }
+        };
+
+        let invalid_token_type = match state {
+            // invalid token types
+            State::Frac12 | State::Frac15 | State::Int21 | State::Int31 => {
+                Some(InvalidTokenType::InvalidNumber)
+            }
+            State::Start => Some(InvalidTokenType::InvalidChar),
+            _ => Some(InvalidTokenType::Other),
+        };
+
+        return if valid_token_type.is_some() {
+            TokenType::ValidTokenType(valid_token_type.expect("Valid token type not exist!"))
+        } else {
+            TokenType::InvalidTokenType(invalid_token_type.expect("Invalid token type not found!"))
+        };
     }
 }
 
@@ -491,12 +513,17 @@ impl StateMachineImpl for LexerStateMachineImpl {
             (State::Start, ':') => Some(State::Colon),
             (State::Colon, ':') => Some(State::ColonColon),
 
+            (State::Div, '/') => Some(State::InlineCmt),
+            (State::Div, '*') => Some(State::BlockCmt),
+
+            (State::InlineCmt, _) => Some(State::InlineCmt),
+
             _ => None,
         }
     }
 
     fn output(state: &Self::State, input: &Self::Input) -> Option<Self::Output> {
         let next_state = Self::transition(state, input).expect("Unhandled transition error");
-        LexerStateMachineImpl::state_to_token_type(&next_state)
+        Some(LexerStateMachineImpl::state_to_token_type(&next_state))
     }
 }
