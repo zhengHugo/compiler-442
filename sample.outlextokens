@@ -1,0 +1,33 @@
+[InvalidChar, _, 1]
+[Integer, 0, 1]
+[Id, x, 2]
+[Assign, =, 2]
+[Id, x, 2]
+[Plus, +, 2]
+[Integer, 1, 2]
+[Integer, 1, 3]
+[Plus, +, 3]
+[Integer, 1, 3]
+[Assign, =, 3]
+[Integer, 2, 3]
+[Id, yes, 4]
+[Eq, ==, 4]
+[Id, no, 4]
+[KwVar, var, 5]
+[KwSelf, self, 5]
+[Integer, 1, 6]
+[Id, e9, 6]
+[Float, 1.0e10, 7]
+[Float, 4.0e0, 8]
+[Integer, 1, 8]
+[InlineCmt, // ab aba, 9]
+[BlockCmt, /*
+block comment ...
+*/, 11]
+[BlockCmt, /*
+/*
+/*
+nested block comments
+*/
+*/
+*/, 15]

@@ -1,0 +1,10 @@
+Lexical error: InvalidChar: "@": line 1.
+Lexical error: InvalidChar: "#": line 1.
+Lexical error: InvalidChar: "$": line 1.
+Lexical error: InvalidChar: "'": line 1.
+Lexical error: InvalidChar: "\": line 1.
+Lexical error: InvalidChar: "~": line 1.
+Lexical error: InvalidNumber: "12.340": line 12.
+Lexical error: InvalidNumber: "12.340": line 13.
+Lexical error: InvalidChar: "_": line 18.
+Lexical error: InvalidChar: "_": line 20.
