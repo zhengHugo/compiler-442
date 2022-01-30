@@ -92,3 +92,10 @@ error will be raised.
 
 - Rust programming language and its standard library (https://www.rust-lang.org/)
 - rust_fsm: A framework for building finite state machines in Rust (https://docs.rs/rust-fsm/0.6.0/rust_fsm/)
+
+## How to run the program (macOS)
+The executable binary `compiler-442` is in the root directory. To run the program, put the input 
+in the root directory and rename them as `<file_name>.src`. Now you can run in terminal by typing:
+```shell
+./compiler-442
+```
