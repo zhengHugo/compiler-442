@@ -1,4 +1,5 @@
 mod lexical;
+mod syntactic;
 
 use lexical::lexer::Lexer;
 use lexical::lexer_machine_impl::LexerStateMachineImpl;
