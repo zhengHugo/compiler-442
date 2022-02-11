@@ -1,4 +1,4 @@
-use crate::token::InvalidTokenType;
+use crate::lexical::token::InvalidTokenType;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 

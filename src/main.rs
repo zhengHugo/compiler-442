@@ -1,15 +1,10 @@
-mod lexer;
-mod lexer_machine_impl;
-mod lexical_error;
-mod token;
+mod lexical;
 
-extern crate core;
-
-use crate::lexer::Lexer;
-use crate::lexer_machine_impl::LexerStateMachineImpl;
-use crate::lexer_machine_impl::State;
-use crate::lexical_error::LexicalError;
-use crate::token::{Token, TokenType};
+use lexical::lexer::Lexer;
+use lexical::lexer_machine_impl::LexerStateMachineImpl;
+use lexical::lexer_machine_impl::State;
+use lexical::lexical_error::LexicalError;
+use lexical::token::TokenType;
 use std::fs;
 use std::fs::File;
 use std::io::Write;

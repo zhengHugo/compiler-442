@@ -1,8 +1,8 @@
-use crate::token::{InvalidTokenType, TokenType, ValidTokenType};
-use crate::{LexerStateMachineImpl, LexicalError, State, Token};
+use crate::lexical::token::{InvalidTokenType, Token, TokenType, ValidTokenType};
+use crate::{LexerStateMachineImpl, LexicalError, State};
 use rust_fsm::StateMachine;
 
-pub(crate) struct Lexer {
+pub struct Lexer {
     state_machine: StateMachine<LexerStateMachineImpl>,
     buffer: String,
     start_loc: (u32, u32),
@@ -154,7 +154,7 @@ impl Lexer {
         }
     }
 
-    // input the next char into the lexer
+    // input the next char into the lexical
     fn next_char(&mut self, input: &char) {
         let consumed_result = self.state_machine.consume(input);
         match consumed_result {
@@ -176,7 +176,7 @@ impl Lexer {
         }
     }
 
-    /// Return a token from the lexer in current state, and reset the state machine
+    /// Return a token from the lexical in current state, and reset the state machine
     fn finalize_token(&mut self, input: Option<&char>) -> Token {
         if self.block_depth > 0 {
             // try to finalize an unterminated block comment

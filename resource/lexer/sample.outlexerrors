@@ -1,0 +1,7 @@
+Lexical error: InvalidChar: "_": line 1.
+Lexical error: UnterminatedBlockCmt: "/*
+/*
+/*
+nested block comments
+*/
+": line 17.

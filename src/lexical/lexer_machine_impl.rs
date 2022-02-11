@@ -1,8 +1,8 @@
-use crate::token::{InvalidTokenType, TokenType, ValidTokenType};
+use crate::lexical::token::{InvalidTokenType, TokenType, ValidTokenType};
 use rust_fsm::StateMachineImpl;
 
 #[derive(Debug)]
-pub(crate) enum State {
+pub enum State {
     Start,
 
     // comment
@@ -163,7 +163,7 @@ pub(crate) enum State {
     KwLe,
     KwLet,
 }
-pub(crate) struct LexerStateMachineImpl {}
+pub struct LexerStateMachineImpl {}
 
 impl LexerStateMachineImpl {
     /// Return a token type based on the current machine state

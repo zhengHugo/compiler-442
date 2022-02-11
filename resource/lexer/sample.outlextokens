@@ -28,10 +28,9 @@
 [BlockCmt, /*
 block comment ...
 */, 13]
-[BlockCmt, /*
+[UnterminatedBlockCmt, /*
 /*
 /*
 nested block comments
 */
-*/
-*/, 17]
+, 17]

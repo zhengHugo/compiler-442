@@ -94,8 +94,10 @@ error will be raised.
 - rust_fsm: A framework for building finite state machines in Rust (https://docs.rs/rust-fsm/0.6.0/rust_fsm/)
 
 ## How to run the program (macOS)
-The executable binary `compiler-442` is in the root directory. To run the program, put the input 
-in the root directory and rename them as `<file_name>.src`. Now you can run in terminal by typing:
+
+The executable binary `lexdriver` is in the root directory. To run the program, put the input 
+in the root directory and rename them as `<file_name>.src`. Now you can run it in terminal by typing:
+
 ```shell
-./compiler-442
+./lexdriver
 ```
