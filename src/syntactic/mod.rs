@@ -1,4 +1,5 @@
 mod derivation;
+pub mod parser;
 mod symbol;
 pub mod tree;
-pub(crate) mod util;
+pub mod util;

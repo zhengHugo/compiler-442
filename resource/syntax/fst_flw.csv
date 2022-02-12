@@ -1,0 +1,57 @@
+﻿nonterminal,first set,follow set,nullable,endable
+START,struct impl func,∅,yes,yes
+ARRAYSIZETAIL,intlit rsqbr,semi lsqbr rpar comma,no,no
+APARAMS,intlit floatlit lpar not id plus minus,rpar,yes,no
+FUNCBODY,lcurbr,struct impl func rcurbr,no,yes
+FUNCHEAD,func,semi lcurbr,no,no
+FPARAMS,id,rpar,yes,no
+INDICES,lsqbr,equal semi mult div and dot rsqbr eq neq lt gt leq geq plus minus or comma rpar,yes,no
+FUNCCALLORVARTAIL,lpar lsqbr,equal semi mult div and dot rsqbr eq neq lt gt leq geq plus minus or comma rpar,yes,no
+FUNCDECL,func,rcurbr public private,no,no
+PROG,struct impl func,∅,yes,yes
+ARITHEXPR,intlit floatlit lpar not id plus minus,semi rsqbr eq neq lt gt leq geq comma rpar,no,no
+EXPRTAIL,eq neq lt gt leq geq,semi comma rpar,no,no
+RELOP,eq neq lt gt leq geq,intlit floatlit lpar not id plus minus,no,no
+APARAMSTAIL,comma,comma rpar,no,no
+REPTAPARAMS1,comma,rpar,yes,no
+REPTFPARAMS3,lsqbr,rpar comma,yes,no
+FPARAMSTAIL,comma,comma rpar,no,no
+REPTFPARAMS4,comma,rpar,yes,no
+REPTFPARAMSTAIL4,lsqbr,comma rpar,yes,no
+REPTFUNCBODY1,let if while read write return id,rcurbr,yes,no
+MEMBERCALL,dot,equal semi mult div and dot rsqbr eq neq lt gt leq geq plus minus or comma rpar,no,no
+REPTFUNCCALLORVAR2,dot,equal semi mult div and rsqbr eq neq lt gt leq geq plus minus or comma rpar,yes,no
+REPTIMPLDEF3,func,rcurbr,yes,no
+INDICE,lsqbr,equal semi mult div and lsqbr dot rsqbr eq neq lt gt leq geq plus minus or comma rpar,no,no
+REPTINDICES0,lsqbr,equal semi mult div and dot rsqbr eq neq lt gt leq geq plus minus or comma rpar,yes,no
+REPTOPTSTRUCTDECL22,comma,lcurbr,yes,no
+REPTPROG0,struct impl func,∅,yes,yes
+MEMBERDECL,let func,rcurbr public private,no,no
+ARRAYSIZE,lsqbr,semi lsqbr rpar comma,no,no
+RETURNTYPE,void integer float id,semi lcurbr,no,no
+ADDOP,plus minus or,intlit floatlit lpar not id plus minus,no,no
+RIGHTRECARITHEXPR,plus minus or,semi rsqbr eq neq lt gt leq geq comma rpar,yes,no
+MULTOP,mult div and,intlit floatlit lpar not id plus minus,no,no
+SIGN,plus minus,intlit floatlit lpar not id plus minus,no,no
+REPTSTATBLOCK1,if while read write return id,rcurbr,yes,no
+RELEXPR,intlit floatlit lpar not id plus minus,rpar,no,no
+STATBLOCK,lcurbr if while read write return id,else semi,yes,no
+FUNCCALLORVAR,id,equal semi mult div and rsqbr eq neq lt gt leq geq plus minus or comma rpar,no,no
+STMTFUNCVARTAIL,equal,semi,yes,no
+ASSIGNOP,equal,intlit floatlit lpar not id plus minus,no,no
+EXPR,intlit floatlit lpar not id plus minus,semi comma rpar,no,no
+OPTSTRUCTDECL2,inherits,lcurbr,yes,no
+REPTSTRUCTDECL4,public private,rcurbr,yes,no
+STRUCTORIMPLORFUNC,struct impl func,struct impl func,no,yes
+STRUCTDECL,struct,struct impl func,no,yes
+IMPLDEF,impl,struct impl func,no,yes
+FUNCDEF,func,struct impl func rcurbr,no,yes
+TERM,intlit floatlit lpar not id plus minus,semi rsqbr eq neq lt gt leq geq plus minus or comma rpar,no,no
+FACTOR,intlit floatlit lpar not id plus minus,semi mult div and rsqbr eq neq lt gt leq geq plus minus or comma rpar,no,no
+RIGHTRECTERM,mult div and,semi rsqbr eq neq lt gt leq geq plus minus or comma rpar,yes,no
+TYPE,integer float id,rpar lcurbr comma lsqbr semi,no,no
+REPTVARDECL4,lsqbr,semi,yes,no
+VARDECLORSTAT,let if while read write return id,let if while read write return id rcurbr,no,no
+VARDECL,let,public private let if while read write return id rcurbr,no,no
+STATEMENT,if while read write return id,else semi let if while read write return id rcurbr,no,no
+VISIBILITY,public private,let func,no,no

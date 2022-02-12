@@ -1,10 +1,11 @@
 mod lexical;
 mod syntactic;
 
+use crate::syntactic::util::{read_first_follow_set_and_enable, read_parsing_table};
 use lexical::lexer::Lexer;
-use syntactic::util::csv_to_hash_map;
 
 fn main() {
     let mut lexer: Lexer = Lexer::new();
-    csv_to_hash_map();
+    read_parsing_table();
+    read_first_follow_set_and_enable();
 }

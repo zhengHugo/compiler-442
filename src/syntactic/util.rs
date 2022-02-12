@@ -6,7 +6,7 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
-pub fn csv_to_hash_map() -> HashMap<(NonTerminal, Terminal), Derivation> {
+pub fn read_parsing_table() -> HashMap<(NonTerminal, Terminal), Derivation> {
     // let mut table: HashMap<(NonTerminal, ValidTokenType), Derivation> = HashMap::new();
     let mut table = HashMap::new();
     let mut terminals: Vec<Terminal> = Vec::new();
@@ -63,6 +63,62 @@ pub fn csv_to_hash_map() -> HashMap<(NonTerminal, Terminal), Derivation> {
     table
 }
 
+pub fn read_first_follow_set_and_enable() -> (
+    HashMap<NonTerminal, Vec<Terminal>>,
+    HashMap<NonTerminal, Vec<Terminal>>,
+    HashMap<NonTerminal, bool>,
+) {
+    let mut first_set = HashMap::new();
+    let mut follow_set = HashMap::new();
+    let mut endable = HashMap::new();
+    if let Ok(lines) = read_lines("resource/syntax/fst_flw.csv") {
+        for (i, line_result) in lines.enumerate() {
+            if let Ok(line) = line_result {
+                if i > 0 {
+                    let cells = split_string(&*line, r",");
+                    if let Symbol::NonTerminal(key) = Symbol::from_string(&cells[0]).unwrap() {
+                        let mut first_terminals: Vec<Terminal> = Regex::new(r" ")
+                            .unwrap()
+                            .split(&cells[1])
+                            .map(|x| match Symbol::from_string(x.trim()).unwrap() {
+                                Symbol::NonTerminal(_) => {
+                                    panic!("Unexpected nonterminal in set table")
+                                }
+                                Symbol::Terminal(terminal) => terminal,
+                            })
+                            .collect();
+                        if cells[3].eq("yes") {
+                            first_terminals.push(Terminal::EPSILON);
+                        }
+                        first_set.insert(key.clone(), first_terminals);
+
+                        // build follow set
+                        let follow_terminals: Vec<Terminal> = Regex::new(r" ")
+                            .unwrap()
+                            .split(&cells[2])
+                            .filter(|x| x.eq(&"∅"))
+                            .map(|x| match Symbol::from_string(x.trim()).unwrap() {
+                                Symbol::NonTerminal(_) => {
+                                    panic!("Unexpected nonterminal in set table")
+                                }
+                                Symbol::Terminal(terminal) => terminal,
+                            })
+                            .collect();
+                        follow_set.insert(key.clone(), follow_terminals);
+
+                        // build endable
+                        if cells[4].eq("yes") {
+                            endable.insert(key.clone(), true);
+                        }
+                    }
+
+                    // build first set
+                }
+            }
+        }
+    }
+    (first_set, follow_set, endable)
+}
 fn split_string(text: &str, regex: &str) -> Vec<String> {
     Regex::new(regex)
         .unwrap()
