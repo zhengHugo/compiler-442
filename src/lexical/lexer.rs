@@ -1,5 +1,6 @@
+use crate::lexical::lexer_machine_impl::{LexerStateMachineImpl, State};
+use crate::lexical::lexical_error::LexicalError;
 use crate::lexical::token::{InvalidTokenType, Token, TokenType, ValidTokenType};
-use crate::{LexerStateMachineImpl, LexicalError, State};
 use rust_fsm::StateMachine;
 
 pub struct Lexer {

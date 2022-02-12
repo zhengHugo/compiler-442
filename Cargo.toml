@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 rust-fsm = "0.6.0"
+regex = "1.5.4"

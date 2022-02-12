@@ -7,7 +7,7 @@ pub enum TokenType {
     InvalidTokenType(InvalidTokenType),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum ValidTokenType {
     Id,
     Integer,
