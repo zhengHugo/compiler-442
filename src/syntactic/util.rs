@@ -14,15 +14,15 @@ pub fn csv_to_hash_map() -> HashMap<(NonTerminal, Terminal), Derivation> {
     if let Ok(lines) = read_lines("resource/syntax/LL(1) Parsing Table.csv") {
         // 1. build terminals and non_terminals
         for (i, line_result) in lines.enumerate() {
-            // for each line:
             if let Ok(line) = line_result {
-                // separate cells by comma
                 let cells = split_string(&*line, r",");
                 if i == 0 {
                     // first line: build terminal vector starting from the third column
                     for (j, cell) in cells.iter().enumerate() {
                         if j > 1 {
-                            // first line: build terminal vector starting from the third column
+                            // starting from the third colum
+                            // first column is non-terminals
+                            // second column is end of file, which will be handled separately
                             if let Symbol::Terminal(terminal) =
                                 Symbol::from_string(cell).expect("Unexpected symbol string")
                             {
@@ -31,7 +31,7 @@ pub fn csv_to_hash_map() -> HashMap<(NonTerminal, Terminal), Derivation> {
                         }
                     }
                 } else {
-                    // starting from second line: build non terminals
+                    // starting from second line: build non-terminals
                     if let Symbol::NonTerminal(non_terminal) =
                         Symbol::from_string(&cells[0]).expect("Unexpected symbol string")
                     {
@@ -42,6 +42,7 @@ pub fn csv_to_hash_map() -> HashMap<(NonTerminal, Terminal), Derivation> {
         }
     }
 
+    // separating table key building from table value filling to keep the rust compiler happy :-)
     if let Ok(lines) = read_lines("resource/syntax/LL(1) Parsing Table.csv") {
         for (i, line_result) in lines.enumerate() {
             if let Ok(line) = line_result {
