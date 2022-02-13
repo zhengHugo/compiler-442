@@ -3,7 +3,7 @@ use regex::Regex;
 
 pub struct Derivation {
     from: NonTerminal,
-    to: Vec<Symbol>,
+    pub to: Vec<Symbol>,
 }
 
 impl Derivation {

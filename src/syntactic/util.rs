@@ -63,7 +63,7 @@ pub fn read_parsing_table() -> HashMap<(NonTerminal, Terminal), Derivation> {
     table
 }
 
-pub fn read_first_follow_set_and_enable() -> (
+pub fn read_first_follow_set_and_endable() -> (
     HashMap<NonTerminal, Vec<Terminal>>,
     HashMap<NonTerminal, Vec<Terminal>>,
     HashMap<NonTerminal, bool>,

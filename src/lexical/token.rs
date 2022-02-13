@@ -1,7 +1,7 @@
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
     ValidTokenType(ValidTokenType),
     InvalidTokenType(InvalidTokenType),
@@ -99,7 +99,7 @@ impl fmt::Display for TokenType {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Token {
     pub(crate) token_type: TokenType,
     pub(crate) lexeme: String,
