@@ -67,7 +67,7 @@ impl Parser {
                     }
                 } else {
                     token_index += 1;
-                    self.skip_error(&tokens[token_index]);
+                    self.skip_error(&tokens, &mut token_index, &mut stack, &tree);
                 }
             } else if let SymbolOrToken::Symbol(Symbol::NonTerminal(nonterminal)) =
                 tree.get_node_value(*stack.last().unwrap())
@@ -77,7 +77,9 @@ impl Parser {
                         .parsing_table
                         .get(&(nonterminal.clone(), Terminal::EOF))
                     {
-                        None => {}
+                        None => {
+                            self.skip_error(&tokens, &mut token_index, &mut stack, &tree);
+                        }
                         Some(derivation) => {
                             self.write_derivation(derivation);
                             current_node = stack.pop().unwrap();
@@ -99,7 +101,7 @@ impl Parser {
                     )) {
                         None => {
                             token_index += 1;
-                            self.skip_error(&tokens[token_index])
+                            self.skip_error(&tokens, &mut token_index, &mut stack, &tree);
                         }
                         Some(derivation) => {
                             self.write_derivation(derivation);
@@ -149,8 +151,51 @@ impl Parser {
         }
     }
 
-    fn skip_error(&self, token: &Token) {
-        println!("Skip token: {:?}", token)
+    fn skip_error(
+        &self,
+        tokens: &Vec<Token>,
+        token_index: &mut usize,
+        stack: &mut Vec<NodeId>,
+        tree: &Tree<SymbolOrToken>,
+    ) {
+        println!("Syntax error at {}", tokens[*token_index].location.0);
+        match tree.get_node_value(*stack.last().unwrap()) {
+            SymbolOrToken::Symbol(Symbol::Terminal(_)) => {
+                // terminal on the stack top
+                stack.pop();
+            }
+            SymbolOrToken::Symbol(Symbol::NonTerminal(top)) => {
+                let lookahead_token_type = tokens[*token_index].get_valid_token_type().unwrap();
+                if self
+                    .follow_set
+                    .get(top)
+                    .unwrap()
+                    .contains(&Terminal::ValidTokenType(lookahead_token_type))
+                {
+                    stack.pop();
+                } else {
+                    while (!self
+                        .first_set
+                        .get(top)
+                        .unwrap()
+                        .contains(&Terminal::ValidTokenType(lookahead_token_type)))
+                        || (self
+                            .first_set
+                            .get(top)
+                            .unwrap()
+                            .contains(&Terminal::EPSILON)
+                            && !self
+                                .follow_set
+                                .get(top)
+                                .unwrap()
+                                .contains(&Terminal::ValidTokenType(lookahead_token_type)))
+                    {
+                        *token_index += 1;
+                    }
+                }
+            }
+            _ => panic!("Trying to skip a matched token. Should not reach here!"),
+        }
     }
 
     fn write_derivation(&self, derivation: &Derivation) {

@@ -7,7 +7,7 @@ pub enum TokenType {
     InvalidTokenType(InvalidTokenType),
 }
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Copy)]
 pub enum ValidTokenType {
     Id,
     Integer,
@@ -105,6 +105,15 @@ pub struct Token {
     pub(crate) token_type: TokenType,
     pub(crate) lexeme: String,
     pub(crate) location: (u32, u32),
+}
+
+impl Token {
+    pub fn get_valid_token_type(&self) -> Option<ValidTokenType> {
+        match self.token_type.clone() {
+            TokenType::ValidTokenType(valid_token_type) => Some(valid_token_type),
+            TokenType::InvalidTokenType(_) => None,
+        }
+    }
 }
 
 impl Debug for Token {
