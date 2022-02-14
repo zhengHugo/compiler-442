@@ -46,6 +46,7 @@ impl Parser {
                     TokenType::ValidTokenType(ValidTokenType::InlineCmt)
                 ))
             {
+                token_index += 1;
                 continue;
             }
             if let SymbolOrToken::Symbol(Symbol::Terminal(Terminal::ValidTokenType(
@@ -65,6 +66,7 @@ impl Parser {
                         token_index += 1;
                     }
                 } else {
+                    token_index += 1;
                     self.skip_error(&tokens[token_index]);
                 }
             } else if let SymbolOrToken::Symbol(Symbol::NonTerminal(nonterminal)) =
@@ -95,7 +97,10 @@ impl Parser {
                         nonterminal.clone(),
                         Terminal::ValidTokenType(valid_token_type.clone()),
                     )) {
-                        None => self.skip_error(&tokens[token_index]),
+                        None => {
+                            token_index += 1;
+                            self.skip_error(&tokens[token_index])
+                        }
                         Some(derivation) => {
                             self.write_derivation(derivation);
                             current_node = stack.pop().unwrap();

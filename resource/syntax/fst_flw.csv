@@ -1,4 +1,4 @@
-﻿nonterminal,first set,follow set,nullable,endable
+nonterminal,first set,follow set,nullable,endable
 START,struct impl func,∅,yes,yes
 ARRAYSIZETAIL,intlit rsqbr,semi lsqbr rpar comma,no,no
 APARAMS,intlit floatlit lpar not id plus minus,rpar,yes,no
@@ -10,7 +10,7 @@ FUNCCALLORVARTAIL,lpar lsqbr,equal semi mult div and dot rsqbr eq neq lt gt leq 
 FUNCDECL,func,rcurbr public private,no,no
 PROG,struct impl func,∅,yes,yes
 ARITHEXPR,intlit floatlit lpar not id plus minus,semi rsqbr eq neq lt gt leq geq comma rpar,no,no
-EXPRTAIL,eq neq lt gt leq geq,semi comma rpar,no,no
+EXPRTAIL,eq neq lt gt leq geq,semi comma rpar,yes,no
 RELOP,eq neq lt gt leq geq,intlit floatlit lpar not id plus minus,no,no
 APARAMSTAIL,comma,comma rpar,no,no
 REPTAPARAMS1,comma,rpar,yes,no
