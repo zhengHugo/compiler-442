@@ -234,7 +234,7 @@ impl LexerStateMachineImpl {
             // comments
             State::InlineCmt => Some(ValidTokenType::InlineCmt),
             State::BlockCmt => Some(ValidTokenType::BlockCmt),
-            _ => None,
+            _ => Some(ValidTokenType::Id),
         };
 
         let invalid_token_type = match state {
@@ -242,14 +242,15 @@ impl LexerStateMachineImpl {
             State::Frac12 | State::Frac15 | State::Int21 | State::Int31 => {
                 Some(InvalidTokenType::InvalidNumber)
             }
+            State::Str2 => Some(InvalidTokenType::InvalidStr),
             State::Start => Some(InvalidTokenType::InvalidChar),
-            _ => Some(InvalidTokenType::Other),
+            _ => None,
         };
 
-        return if valid_token_type.is_some() {
-            TokenType::ValidTokenType(valid_token_type.expect("Valid token type not exist!"))
-        } else {
+        return if invalid_token_type.is_some() {
             TokenType::InvalidTokenType(invalid_token_type.expect("Invalid token type not found!"))
+        } else {
+            TokenType::ValidTokenType(valid_token_type.expect("Valid token type not exist!"))
         };
     }
 }

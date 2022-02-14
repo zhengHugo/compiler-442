@@ -28,6 +28,7 @@ impl Display for LexicalError {
                 InvalidTokenType::InvalidNumber => "Invalid number",
                 InvalidTokenType::UnterminatedBlockCmt => "Unterminated block comment",
                 InvalidTokenType::InvalidChar => "Invalid character",
+                InvalidTokenType::InvalidStr => "Invalid string",
                 InvalidTokenType::Other => "Invalid token",
             },
             self.invalid_lexeme,

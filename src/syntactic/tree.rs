@@ -47,7 +47,7 @@ where
             parent,
             children: vec![],
         });
-        self.arena.nodes.len()
+        self.arena.nodes.len() - 1
     }
 
     pub fn get_node_value(&self, node_id: NodeId) -> &T {

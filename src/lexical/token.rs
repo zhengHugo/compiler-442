@@ -76,6 +76,7 @@ impl fmt::Display for ValidTokenType {
 pub enum InvalidTokenType {
     InvalidNumber,
     InvalidChar,
+    InvalidStr,
     UnterminatedBlockCmt,
     Other,
 }

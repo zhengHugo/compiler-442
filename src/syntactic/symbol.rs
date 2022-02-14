@@ -1,19 +1,42 @@
 use crate::lexical::token::ValidTokenType::{self, *};
 use crate::syntactic::symbol::NonTerminal::*;
 use crate::syntactic::symbol::Terminal::*;
+use std::fmt::{Display, Formatter};
 
+#[derive(PartialEq, Debug)]
 pub enum Symbol {
     NonTerminal(NonTerminal),
     Terminal(Terminal),
 }
 
-#[derive(Clone, PartialEq, Eq, Hash)]
+impl Display for Symbol {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Symbol::NonTerminal(nonterminal) => write!(f, "{:?}", nonterminal),
+            Symbol::Terminal(terminal) => write!(f, "{:?}", terminal),
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub enum Terminal {
     ValidTokenType(ValidTokenType),
     EPSILON,
+    EOF,
 }
 
-#[derive(Clone, PartialEq, Eq, Hash)]
+impl Display for Terminal {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Terminal::ValidTokenType(valid_token_type) => {
+                write!(f, "{}", valid_token_type.to_string())
+            }
+            other => write!(f, "{:?}", other),
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub enum NonTerminal {
     Start,
     AddOp,
@@ -73,64 +96,70 @@ pub enum NonTerminal {
     Visibility,
 }
 
+impl Display for NonTerminal {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 impl Symbol {
-    pub fn from_string(symbol_string: &str) -> Option<Symbol> {
+    pub fn from_string(symbol_string: &str) -> Symbol {
         if symbol_string.contains("epsilon") {
-            Some(Symbol::Terminal(EPSILON))
+            Symbol::Terminal(EPSILON)
+        } else if symbol_string.contains("$") {
+            Symbol::Terminal(EOF)
         } else if symbol_string.chars().any(|c| c.is_lowercase()) {
             // this is a terminal
-            Some(Symbol::Terminal(Terminal::ValidTokenType(
-                match symbol_string {
-                    "private" => KwPrivate,
-                    "public" => KwPublic,
-                    "semi" => Semi,
-                    "colon" => Colon,
-                    "id" => Id,
-                    "let" => KwLet,
-                    "float" => KwFloat,
-                    "integer" => KwInteger,
-                    "rcurbr" => CloseCuBr,
-                    "lcurbr" => OpenCuBr,
-                    "struct" => KwStruct,
-                    "rpar" => ClosePar,
-                    "lpar" => OpenPar,
-                    "return" => KwReturn,
-                    "write" => KwWrite,
-                    "read" => KwRead,
-                    "while" => KwWhile,
-                    "else" => KwElse,
-                    "then" => KwThen,
-                    "if" => KwIf,
-                    "minus" => Minus,
-                    "plus" => Plus,
-                    "void" => KwVoid,
-                    "comma" => Comma,
-                    "geq" => Geq,
-                    "leq" => Leq,
-                    "gt" => Gt,
-                    "lt" => Lt,
-                    "neq" => NotEq,
-                    "eq" => Eq,
-                    "inherits" => KwInherits,
-                    "and" => And,
-                    "div" => Div,
-                    "mult" => Mult,
-                    "dot" => Dot,
-                    "rsqbr" => CloseSqBr,
-                    "lsqbr" => OpenSqBr,
-                    "impl" => KwImpl,
-                    "arrow" => Arrow,
-                    "func" => KwFunc,
-                    "not" => Not,
-                    "floatlit" => Float,
-                    "intlit" => Integer,
-                    "equal" => Assign,
-                    "or" => Or,
-                    bad_string => panic!("Unexpected terminal symbol string {}", bad_string),
-                },
-            )))
+            Symbol::Terminal(Terminal::ValidTokenType(match symbol_string {
+                "private" => KwPrivate,
+                "public" => KwPublic,
+                "semi" => Semi,
+                "colon" => Colon,
+                "id" => Id,
+                "let" => KwLet,
+                "float" => KwFloat,
+                "integer" => KwInteger,
+                "rcurbr" => CloseCuBr,
+                "lcurbr" => OpenCuBr,
+                "struct" => KwStruct,
+                "rpar" => ClosePar,
+                "lpar" => OpenPar,
+                "return" => KwReturn,
+                "write" => KwWrite,
+                "read" => KwRead,
+                "while" => KwWhile,
+                "else" => KwElse,
+                "then" => KwThen,
+                "if" => KwIf,
+                "minus" => Minus,
+                "plus" => Plus,
+                "void" => KwVoid,
+                "comma" => Comma,
+                "geq" => Geq,
+                "leq" => Leq,
+                "gt" => Gt,
+                "lt" => Lt,
+                "neq" => NotEq,
+                "eq" => Eq,
+                "inherits" => KwInherits,
+                "and" => And,
+                "div" => Div,
+                "mult" => Mult,
+                "dot" => Dot,
+                "rsqbr" => CloseSqBr,
+                "lsqbr" => OpenSqBr,
+                "impl" => KwImpl,
+                "arrow" => Arrow,
+                "func" => KwFunc,
+                "not" => Not,
+                "floatlit" => Float,
+                "intlit" => Integer,
+                "equal" => Assign,
+                "or" => Or,
+                bad_string => panic!("Unexpected terminal symbol string {}", bad_string),
+            }))
         } else if symbol_string.chars().any(|c| c.is_uppercase()) {
-            Some(Symbol::NonTerminal(match symbol_string {
+            Symbol::NonTerminal(match symbol_string {
                 "START" => Start,
                 "ADDOP" => AddOp,
                 "APARAMS" => AParams,
@@ -188,9 +217,9 @@ impl Symbol {
                 "VARDECLORSTAT" => VarDeclOrStat,
                 "VISIBILITY" => Visibility,
                 bad_string => panic!("Unexpected nonterminal symbol string {}", bad_string),
-            }))
+            })
         } else {
-            None
+            panic!("Unexpected nonterminal symbol string {}", symbol_string)
         }
     }
 }

@@ -135,10 +135,15 @@ impl Lexer {
         None
     }
 
+    pub fn get_tokens(&self) -> Vec<Token> {
+        self.output_tokens.clone()
+    }
+
     // push a token into the result token vector, possibly giving a lexical error
     fn handle_finalized_token(&mut self, token: Token) -> Option<LexicalError> {
         match token.token_type {
             TokenType::ValidTokenType(_) => {
+                println!("{}", token);
                 self.output_tokens.push(token);
                 None
             }
@@ -148,6 +153,7 @@ impl Lexer {
                     invalid_lexeme: token.lexeme.clone(),
                     loc: token.location,
                 };
+                println!("{}", token);
                 self.output_tokens.push(token);
                 println!("{}", e);
                 Some(e)

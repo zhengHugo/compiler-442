@@ -19,22 +19,17 @@ pub fn read_parsing_table() -> HashMap<(NonTerminal, Terminal), Derivation> {
                 if i == 0 {
                     // first line: build terminal vector starting from the third column
                     for (j, cell) in cells.iter().enumerate() {
-                        if j > 1 {
-                            // starting from the third colum
+                        if j > 0 {
+                            // starting from the second colum
                             // first column is non-terminals
-                            // second column is end of file, which will be handled separately
-                            if let Symbol::Terminal(terminal) =
-                                Symbol::from_string(cell).expect("Unexpected symbol string")
-                            {
+                            if let Symbol::Terminal(terminal) = Symbol::from_string(cell) {
                                 terminals.push(terminal);
                             }
                         }
                     }
                 } else {
                     // starting from second line: build non-terminals
-                    if let Symbol::NonTerminal(non_terminal) =
-                        Symbol::from_string(&cells[0]).expect("Unexpected symbol string")
-                    {
+                    if let Symbol::NonTerminal(non_terminal) = Symbol::from_string(&cells[0]) {
                         non_terminals.push(non_terminal);
                     }
                 }
@@ -49,9 +44,9 @@ pub fn read_parsing_table() -> HashMap<(NonTerminal, Terminal), Derivation> {
                 let cells = split_string(&*line, r",");
                 if i > 0 {
                     for (j, cell) in cells.iter().enumerate() {
-                        if j > 1 && !cell.eq("") {
+                        if j > 0 && !cell.eq("") {
                             table.insert(
-                                (non_terminals[i - 1].clone(), terminals[j - 2].clone()),
+                                (non_terminals[i - 1].clone(), terminals[j - 1].clone()),
                                 Derivation::new(cell),
                             );
                         }
@@ -76,11 +71,11 @@ pub fn read_first_follow_set_and_endable() -> (
             if let Ok(line) = line_result {
                 if i > 0 {
                     let cells = split_string(&*line, r",");
-                    if let Symbol::NonTerminal(key) = Symbol::from_string(&cells[0]).unwrap() {
+                    if let Symbol::NonTerminal(key) = Symbol::from_string(&cells[0]) {
                         let mut first_terminals: Vec<Terminal> = Regex::new(r" ")
                             .unwrap()
                             .split(&cells[1])
-                            .map(|x| match Symbol::from_string(x.trim()).unwrap() {
+                            .map(|x| match Symbol::from_string(x.trim()) {
                                 Symbol::NonTerminal(_) => {
                                     panic!("Unexpected nonterminal in set table")
                                 }
@@ -96,8 +91,8 @@ pub fn read_first_follow_set_and_endable() -> (
                         let follow_terminals: Vec<Terminal> = Regex::new(r" ")
                             .unwrap()
                             .split(&cells[2])
-                            .filter(|x| x.eq(&"∅"))
-                            .map(|x| match Symbol::from_string(x.trim()).unwrap() {
+                            .filter(|x| !(*x).eq("∅"))
+                            .map(|x| match Symbol::from_string(x.trim()) {
                                 Symbol::NonTerminal(_) => {
                                     panic!("Unexpected nonterminal in set table")
                                 }
