@@ -1,6 +1,16 @@
-/* sort the array */
-func bubbleSort(arr: integer[], size: integer) -> void
+func main()
 {
-  let n: integer;
-  n = size;
+  let f1: LINEAR;
+  let f2: QUADRATIC;
+  let counter: integer;
+  f1 = f1.build(2, 3.5);
+  f2 = f2.build(-2.0, 1.0, 0.0);
+  counter = 1;
+
+  while(counter <= 10)
+  {
+    write(counter);
+    write(f1.evaluate(counter));
+    write(f2.evaluate(counter));
+  };
 }

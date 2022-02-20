@@ -6,29 +6,35 @@ use crate::syntactic::util;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
+use std::fs::File;
+use std::io::Result as IOResult;
+use std::io::Write;
 
 pub struct Parser {
     parsing_table: HashMap<(NonTerminal, Terminal), Derivation>,
     first_set: HashMap<NonTerminal, Vec<Terminal>>,
     follow_set: HashMap<NonTerminal, Vec<Terminal>>,
-    endable: HashMap<NonTerminal, bool>,
 }
 
 impl Parser {
     pub fn new() -> Self {
-        let (first_set, follow_set, endable) = util::read_first_follow_set_and_endable();
+        let (first_set, follow_set, _) = util::read_first_follow_set_and_endable();
         Self {
             parsing_table: util::read_parsing_table(),
             first_set,
             follow_set,
-            endable,
         }
     }
-    pub fn parse(&self, tokens: Vec<Token>) -> Result<Tree<SymbolOrToken>, SyntaxError> {
+    pub fn parse(&mut self, tokens: Vec<Token>) -> Result<Tree<SymbolOrToken>, SyntaxError> {
+        // debug only
+        let mut error_file = File::create("resource/syntax/outsyntaxerrors").unwrap();
+        let mut derivation_file = File::create("resource/syntax/outderivations").unwrap();
+
         let mut tree: Tree<SymbolOrToken> = Tree::new();
         let mut stack: Vec<NodeId> = Vec::new();
         let mut token_index: usize = 0;
         let mut current_node: NodeId;
+
         let start_node_id = tree.insert_node(
             None,
             SymbolOrToken::Symbol(Symbol::NonTerminal(NonTerminal::Start)),
@@ -57,17 +63,31 @@ impl Parser {
                     &tokens[token_index].token_type
                 {
                     if top_token_type.eq(lookahead_token_type) {
-                        println!("match {}", lookahead_token_type);
+                        self.write_match(&mut derivation_file, lookahead_token_type);
                         current_node = stack.pop().unwrap();
                         tree.insert_node(
                             Some(current_node),
                             SymbolOrToken::Token(tokens[token_index].clone()),
                         );
                         token_index += 1;
+                    } else {
+                        self.skip_error(
+                            &tokens,
+                            &mut token_index,
+                            &mut stack,
+                            &tree,
+                            &mut error_file,
+                        );
                     }
                 } else {
-                    token_index += 1;
-                    self.skip_error(&tokens, &mut token_index, &mut stack, &tree);
+                    // token_index += 1;
+                    self.skip_error(
+                        &tokens,
+                        &mut token_index,
+                        &mut stack,
+                        &tree,
+                        &mut error_file,
+                    );
                 }
             } else if let SymbolOrToken::Symbol(Symbol::NonTerminal(nonterminal)) =
                 tree.get_node_value(*stack.last().unwrap())
@@ -78,10 +98,16 @@ impl Parser {
                         .get(&(nonterminal.clone(), Terminal::EOF))
                     {
                         None => {
-                            self.skip_error(&tokens, &mut token_index, &mut stack, &tree);
+                            self.skip_error(
+                                &tokens,
+                                &mut token_index,
+                                &mut stack,
+                                &tree,
+                                &mut error_file,
+                            );
                         }
                         Some(derivation) => {
-                            self.write_derivation(derivation);
+                            self.write_derivation(&mut derivation_file, derivation);
                             current_node = stack.pop().unwrap();
                             Self::handle_derivation(
                                 &mut stack,
@@ -100,11 +126,17 @@ impl Parser {
                         Terminal::ValidTokenType(valid_token_type.clone()),
                     )) {
                         None => {
-                            token_index += 1;
-                            self.skip_error(&tokens, &mut token_index, &mut stack, &tree);
+                            // token_index += 1;
+                            self.skip_error(
+                                &tokens,
+                                &mut token_index,
+                                &mut stack,
+                                &tree,
+                                &mut error_file,
+                            );
                         }
                         Some(derivation) => {
-                            self.write_derivation(derivation);
+                            self.write_derivation(&mut derivation_file, derivation);
                             current_node = stack.pop().unwrap();
                             // insert node
                             Self::handle_derivation(
@@ -157,21 +189,26 @@ impl Parser {
         token_index: &mut usize,
         stack: &mut Vec<NodeId>,
         tree: &Tree<SymbolOrToken>,
+        error_file: &mut File,
     ) {
-        println!("Syntax error at {}", tokens[*token_index].location.0);
+        error_file.write_all(
+            format!("Syntax error at line {}\n", tokens[*token_index].location.0).as_ref(),
+        );
         match tree.get_node_value(*stack.last().unwrap()) {
-            SymbolOrToken::Symbol(Symbol::Terminal(_)) => {
+            SymbolOrToken::Symbol(Symbol::Terminal(top)) => {
                 // terminal on the stack top
+                error_file.write_all(format!("Expect token {}", top).as_ref());
                 stack.pop();
             }
             SymbolOrToken::Symbol(Symbol::NonTerminal(top)) => {
-                let lookahead_token_type = tokens[*token_index].get_valid_token_type().unwrap();
+                let mut lookahead_token_type = tokens[*token_index].get_valid_token_type().unwrap();
                 if self
                     .follow_set
                     .get(top)
                     .unwrap()
                     .contains(&Terminal::ValidTokenType(lookahead_token_type))
                 {
+                    error_file.write_all(format!("Expect nonterminal {}\n", top).as_ref());
                     stack.pop();
                 } else {
                     while (!self
@@ -190,7 +227,10 @@ impl Parser {
                                 .unwrap()
                                 .contains(&Terminal::ValidTokenType(lookahead_token_type)))
                     {
+                        error_file
+                            .write_all(format!("Skip token: {}\n", lookahead_token_type).as_ref());
                         *token_index += 1;
+                        lookahead_token_type = tokens[*token_index].get_valid_token_type().unwrap();
                     }
                 }
             }
@@ -198,8 +238,16 @@ impl Parser {
         }
     }
 
-    fn write_derivation(&self, derivation: &Derivation) {
-        println!("{}", derivation)
+    fn write_derivation(
+        &self,
+        derivation_file: &mut File,
+        derivation: &Derivation,
+    ) -> IOResult<()> {
+        derivation_file.write_all(format!("{}\n", derivation).as_ref())
+    }
+
+    fn write_match(&self, derivation_file: &mut File, lookahead: &ValidTokenType) -> IOResult<()> {
+        derivation_file.write_all(format!("match {}\n", lookahead).as_ref())
     }
 }
 

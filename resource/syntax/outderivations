@@ -1,0 +1,322 @@
+Start -> Prog
+Prog -> ReptProg0
+ReptProg0 -> StructOrImplOrFunc ReptProg0
+StructOrImplOrFunc -> FuncDef
+FuncDef -> FuncHead FuncBody
+FuncHead -> ValidTokenType(KwFunc) ValidTokenType(Id) ValidTokenType(OpenPar) FParams ValidTokenType(ClosePar) ValidTokenType(Arrow) ReturnType
+match KwFunc
+match Id
+match OpenPar
+FParams -> EPSILON
+match ClosePar
+FuncBody -> ValidTokenType(OpenCuBr) ReptFuncBody1 ValidTokenType(CloseCuBr)
+match OpenCuBr
+ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
+VarDeclOrStat -> VarDecl
+VarDecl -> ValidTokenType(KwLet) ValidTokenType(Id) ValidTokenType(Colon) Type ReptVarDecl4 ValidTokenType(Semi)
+match KwLet
+match Id
+match Colon
+Type -> ValidTokenType(Id)
+match Id
+ReptVarDecl4 -> EPSILON
+match Semi
+ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
+VarDeclOrStat -> VarDecl
+VarDecl -> ValidTokenType(KwLet) ValidTokenType(Id) ValidTokenType(Colon) Type ReptVarDecl4 ValidTokenType(Semi)
+match KwLet
+match Id
+match Colon
+Type -> ValidTokenType(Id)
+match Id
+ReptVarDecl4 -> EPSILON
+match Semi
+ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
+VarDeclOrStat -> VarDecl
+VarDecl -> ValidTokenType(KwLet) ValidTokenType(Id) ValidTokenType(Colon) Type ReptVarDecl4 ValidTokenType(Semi)
+match KwLet
+match Id
+match Colon
+Type -> ValidTokenType(KwInteger)
+match KwInteger
+ReptVarDecl4 -> EPSILON
+match Semi
+ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
+VarDeclOrStat -> Statement
+Statement -> FuncCallOrVar StmtFuncVarTail ValidTokenType(Semi)
+FuncCallOrVar -> ValidTokenType(Id) FuncCallOrVarTail ReptFuncCallOrVar2
+match Id
+FuncCallOrVarTail -> Indices
+Indices -> ReptIndices0
+ReptIndices0 -> EPSILON
+ReptFuncCallOrVar2 -> EPSILON
+StmtFuncVarTail -> AssignOp Expr
+AssignOp -> ValidTokenType(Assign)
+match Assign
+Expr -> ArithExpr ExprTail
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> FuncCallOrVar
+FuncCallOrVar -> ValidTokenType(Id) FuncCallOrVarTail ReptFuncCallOrVar2
+match Id
+FuncCallOrVarTail -> Indices
+Indices -> ReptIndices0
+ReptIndices0 -> EPSILON
+ReptFuncCallOrVar2 -> MemberCall ReptFuncCallOrVar2
+MemberCall -> ValidTokenType(Dot) ValidTokenType(Id) FuncCallOrVarTail
+match Dot
+match Id
+FuncCallOrVarTail -> ValidTokenType(OpenPar) AParams ValidTokenType(ClosePar)
+match OpenPar
+AParams -> Expr ReptAParams1
+Expr -> ArithExpr ExprTail
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> ValidTokenType(Integer)
+match Integer
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+ExprTail -> EPSILON
+ReptAParams1 -> AParamsTail ReptAParams1
+AParamsTail -> ValidTokenType(Comma) Expr
+match Comma
+Expr -> ArithExpr ExprTail
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> ValidTokenType(Float)
+match Float
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+ExprTail -> EPSILON
+ReptAParams1 -> EPSILON
+match ClosePar
+ReptFuncCallOrVar2 -> EPSILON
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+ExprTail -> EPSILON
+match Semi
+ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
+VarDeclOrStat -> Statement
+Statement -> FuncCallOrVar StmtFuncVarTail ValidTokenType(Semi)
+FuncCallOrVar -> ValidTokenType(Id) FuncCallOrVarTail ReptFuncCallOrVar2
+match Id
+FuncCallOrVarTail -> Indices
+Indices -> ReptIndices0
+ReptIndices0 -> EPSILON
+ReptFuncCallOrVar2 -> EPSILON
+StmtFuncVarTail -> AssignOp Expr
+AssignOp -> ValidTokenType(Assign)
+match Assign
+Expr -> ArithExpr ExprTail
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> FuncCallOrVar
+FuncCallOrVar -> ValidTokenType(Id) FuncCallOrVarTail ReptFuncCallOrVar2
+match Id
+FuncCallOrVarTail -> Indices
+Indices -> ReptIndices0
+ReptIndices0 -> EPSILON
+ReptFuncCallOrVar2 -> MemberCall ReptFuncCallOrVar2
+MemberCall -> ValidTokenType(Dot) ValidTokenType(Id) FuncCallOrVarTail
+match Dot
+match Id
+FuncCallOrVarTail -> ValidTokenType(OpenPar) AParams ValidTokenType(ClosePar)
+match OpenPar
+AParams -> Expr ReptAParams1
+Expr -> ArithExpr ExprTail
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> Sign Factor
+Sign -> ValidTokenType(Minus)
+match Minus
+Factor -> ValidTokenType(Float)
+match Float
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+ExprTail -> EPSILON
+ReptAParams1 -> AParamsTail ReptAParams1
+AParamsTail -> ValidTokenType(Comma) Expr
+match Comma
+Expr -> ArithExpr ExprTail
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> ValidTokenType(Float)
+match Float
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+ExprTail -> EPSILON
+ReptAParams1 -> AParamsTail ReptAParams1
+AParamsTail -> ValidTokenType(Comma) Expr
+match Comma
+Expr -> ArithExpr ExprTail
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> ValidTokenType(Float)
+match Float
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+ExprTail -> EPSILON
+ReptAParams1 -> EPSILON
+match ClosePar
+ReptFuncCallOrVar2 -> EPSILON
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+ExprTail -> EPSILON
+match Semi
+ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
+VarDeclOrStat -> Statement
+Statement -> FuncCallOrVar StmtFuncVarTail ValidTokenType(Semi)
+FuncCallOrVar -> ValidTokenType(Id) FuncCallOrVarTail ReptFuncCallOrVar2
+match Id
+FuncCallOrVarTail -> Indices
+Indices -> ReptIndices0
+ReptIndices0 -> EPSILON
+ReptFuncCallOrVar2 -> EPSILON
+StmtFuncVarTail -> AssignOp Expr
+AssignOp -> ValidTokenType(Assign)
+match Assign
+Expr -> ArithExpr ExprTail
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> ValidTokenType(Integer)
+match Integer
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+ExprTail -> EPSILON
+match Semi
+ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
+VarDeclOrStat -> Statement
+Statement -> ValidTokenType(KwWhile) ValidTokenType(OpenPar) RelExpr ValidTokenType(ClosePar) StatBlock ValidTokenType(Semi)
+match KwWhile
+match OpenPar
+RelExpr -> ArithExpr ExprTail
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> FuncCallOrVar
+FuncCallOrVar -> ValidTokenType(Id) FuncCallOrVarTail ReptFuncCallOrVar2
+match Id
+FuncCallOrVarTail -> Indices
+Indices -> ReptIndices0
+ReptIndices0 -> EPSILON
+ReptFuncCallOrVar2 -> EPSILON
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+ExprTail -> RelOp ArithExpr
+RelOp -> ValidTokenType(Leq)
+match Leq
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> ValidTokenType(Integer)
+match Integer
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+match ClosePar
+StatBlock -> ValidTokenType(OpenCuBr) ReptStatBlock1 ValidTokenType(CloseCuBr)
+match OpenCuBr
+ReptStatBlock1 -> Statement ReptStatBlock1
+Statement -> ValidTokenType(KwWrite) ValidTokenType(OpenPar) Expr ValidTokenType(ClosePar) ValidTokenType(Semi)
+match KwWrite
+match OpenPar
+Expr -> ArithExpr ExprTail
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> FuncCallOrVar
+FuncCallOrVar -> ValidTokenType(Id) FuncCallOrVarTail ReptFuncCallOrVar2
+match Id
+FuncCallOrVarTail -> Indices
+Indices -> ReptIndices0
+ReptIndices0 -> EPSILON
+ReptFuncCallOrVar2 -> EPSILON
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+ExprTail -> EPSILON
+match ClosePar
+match Semi
+ReptStatBlock1 -> Statement ReptStatBlock1
+Statement -> ValidTokenType(KwWrite) ValidTokenType(OpenPar) Expr ValidTokenType(ClosePar) ValidTokenType(Semi)
+match KwWrite
+match OpenPar
+Expr -> ArithExpr ExprTail
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> FuncCallOrVar
+FuncCallOrVar -> ValidTokenType(Id) FuncCallOrVarTail ReptFuncCallOrVar2
+match Id
+FuncCallOrVarTail -> Indices
+Indices -> ReptIndices0
+ReptIndices0 -> EPSILON
+ReptFuncCallOrVar2 -> MemberCall ReptFuncCallOrVar2
+MemberCall -> ValidTokenType(Dot) ValidTokenType(Id) FuncCallOrVarTail
+match Dot
+match Id
+FuncCallOrVarTail -> ValidTokenType(OpenPar) AParams ValidTokenType(ClosePar)
+match OpenPar
+AParams -> Expr ReptAParams1
+Expr -> ArithExpr ExprTail
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> FuncCallOrVar
+FuncCallOrVar -> ValidTokenType(Id) FuncCallOrVarTail ReptFuncCallOrVar2
+match Id
+FuncCallOrVarTail -> Indices
+Indices -> ReptIndices0
+ReptIndices0 -> EPSILON
+ReptFuncCallOrVar2 -> EPSILON
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+ExprTail -> EPSILON
+ReptAParams1 -> EPSILON
+match ClosePar
+ReptFuncCallOrVar2 -> EPSILON
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+ExprTail -> EPSILON
+match ClosePar
+match Semi
+ReptStatBlock1 -> Statement ReptStatBlock1
+Statement -> ValidTokenType(KwWrite) ValidTokenType(OpenPar) Expr ValidTokenType(ClosePar) ValidTokenType(Semi)
+match KwWrite
+match OpenPar
+Expr -> ArithExpr ExprTail
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> FuncCallOrVar
+FuncCallOrVar -> ValidTokenType(Id) FuncCallOrVarTail ReptFuncCallOrVar2
+match Id
+FuncCallOrVarTail -> Indices
+Indices -> ReptIndices0
+ReptIndices0 -> EPSILON
+ReptFuncCallOrVar2 -> MemberCall ReptFuncCallOrVar2
+MemberCall -> ValidTokenType(Dot) ValidTokenType(Id) FuncCallOrVarTail
+match Dot
+match Id
+FuncCallOrVarTail -> ValidTokenType(OpenPar) AParams ValidTokenType(ClosePar)
+match OpenPar
+AParams -> Expr ReptAParams1
+Expr -> ArithExpr ExprTail
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> FuncCallOrVar
+FuncCallOrVar -> ValidTokenType(Id) FuncCallOrVarTail ReptFuncCallOrVar2
+match Id
+FuncCallOrVarTail -> Indices
+Indices -> ReptIndices0
+ReptIndices0 -> EPSILON
+ReptFuncCallOrVar2 -> EPSILON
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+ExprTail -> EPSILON
+ReptAParams1 -> EPSILON
+match ClosePar
+ReptFuncCallOrVar2 -> EPSILON
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+ExprTail -> EPSILON
+match ClosePar
+match Semi
+ReptStatBlock1 -> EPSILON
+match CloseCuBr
+match Semi
+ReptFuncBody1 -> EPSILON
+match CloseCuBr
+ReptProg0 -> EPSILON
