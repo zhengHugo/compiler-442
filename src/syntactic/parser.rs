@@ -192,12 +192,17 @@ impl Parser {
         error_file: &mut File,
     ) {
         error_file.write_all(
-            format!("Syntax error at line {}\n", tokens[*token_index].location.0).as_ref(),
+            format!(
+                "Syntax error at line {}: unexpected token {}\n",
+                tokens[*token_index].location.0,
+                tokens[*token_index].get_valid_token_type().unwrap()
+            )
+            .as_ref(),
         );
         match tree.get_node_value(*stack.last().unwrap()) {
             SymbolOrToken::Symbol(Symbol::Terminal(top)) => {
                 // terminal on the stack top
-                error_file.write_all(format!("Expect token {}", top).as_ref());
+                error_file.write_all(format!("Expect token {}\n", top).as_ref());
                 stack.pop();
             }
             SymbolOrToken::Symbol(Symbol::NonTerminal(top)) => {

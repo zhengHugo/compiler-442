@@ -1,3 +1,4 @@
-Syntax error at line 2
-Expect token ArrowSyntax error at line 2
+Syntax error at line 2: unexpected token OpenCuBr
+Expect token Arrow
+Syntax error at line 2: unexpected token OpenCuBr
 Expect nonterminal ReturnType

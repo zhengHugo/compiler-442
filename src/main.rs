@@ -1,3 +1,5 @@
+extern crate core;
+
 mod lexical;
 mod syntactic;
 
@@ -12,5 +14,7 @@ fn main() {
     if let Ok(src) = fs::read_to_string("resource/syntax/test.src") {
         lexer.read_source(&src);
         parser.parse(lexer.get_tokens());
+    } else {
+        panic!("Cannot find source code");
     }
 }
