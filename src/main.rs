@@ -1,6 +1,7 @@
 extern crate core;
 
 mod lexical;
+mod semantic;
 mod syntactic;
 
 use crate::syntactic::parser::Parser;

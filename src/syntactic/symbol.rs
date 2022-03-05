@@ -2,11 +2,13 @@ use crate::lexical::token::ValidTokenType::{self, *};
 use crate::syntactic::symbol::NonTerminal::*;
 use crate::syntactic::symbol::Terminal::*;
 use std::fmt::{Display, Formatter};
+use std::str::FromStr;
 
 #[derive(PartialEq, Debug)]
 pub enum Symbol {
     NonTerminal(NonTerminal),
     Terminal(Terminal),
+    ActionSymbol(ActionSymbol),
 }
 
 impl Display for Symbol {
@@ -14,6 +16,7 @@ impl Display for Symbol {
         match self {
             Symbol::NonTerminal(nonterminal) => write!(f, "{:?}", nonterminal),
             Symbol::Terminal(terminal) => write!(f, "{:?}", terminal),
+            Symbol::ActionSymbol(action) => write!(f, "{:?}", action),
         }
     }
 }
@@ -167,7 +170,7 @@ impl Symbol {
                 "or" => Or,
                 bad_string => panic!("Unexpected terminal symbol string {}", bad_string),
             }))
-        } else if symbol_string.chars().any(|c| c.is_uppercase()) {
+        } else if symbol_string.len() > 2 {
             Symbol::NonTerminal(match symbol_string {
                 "START" => Start,
                 "ADDOP" => AddOp,
@@ -234,8 +237,110 @@ impl Symbol {
                 "VISIBILITY" => Visibility,
                 bad_string => panic!("Unexpected nonterminal symbol string {}", bad_string),
             })
+        } else if symbol_string.len() <= 2 {
+            Symbol::ActionSymbol(ActionSymbol::from_str(symbol_string).unwrap())
         } else {
             panic!("Unexpected nonterminal symbol string {}", symbol_string)
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+pub enum ActionSymbol {
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    H,
+    I,
+    J,
+    K,
+    L,
+    M,
+    N,
+    O,
+    P,
+    Q,
+    R,
+    S,
+    T,
+    U,
+    V,
+    W,
+    X,
+    Y,
+    Z,
+    A1,
+    A2,
+    A3,
+    A4,
+    A5,
+    A6,
+    A7,
+    A8,
+    A9,
+    B1,
+    B2,
+    B3,
+    B4,
+    B5,
+    B6,
+    B7,
+    B8,
+}
+
+impl FromStr for ActionSymbol {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "A" => Ok(ActionSymbol::A),
+            "B" => Ok(ActionSymbol::B),
+            "C" => Ok(ActionSymbol::C),
+            "D" => Ok(ActionSymbol::D),
+            "E" => Ok(ActionSymbol::E),
+            "F" => Ok(ActionSymbol::F),
+            "G" => Ok(ActionSymbol::G),
+            "H" => Ok(ActionSymbol::H),
+            "I" => Ok(ActionSymbol::I),
+            "J" => Ok(ActionSymbol::J),
+            "K" => Ok(ActionSymbol::K),
+            "L" => Ok(ActionSymbol::L),
+            "M" => Ok(ActionSymbol::M),
+            "N" => Ok(ActionSymbol::N),
+            "O" => Ok(ActionSymbol::O),
+            "P" => Ok(ActionSymbol::P),
+            "Q" => Ok(ActionSymbol::Q),
+            "R" => Ok(ActionSymbol::R),
+            "S" => Ok(ActionSymbol::S),
+            "T" => Ok(ActionSymbol::T),
+            "U" => Ok(ActionSymbol::U),
+            "V" => Ok(ActionSymbol::V),
+            "W" => Ok(ActionSymbol::W),
+            "X" => Ok(ActionSymbol::X),
+            "Y" => Ok(ActionSymbol::Y),
+            "Z" => Ok(ActionSymbol::Z),
+            "A1" => Ok(ActionSymbol::A1),
+            "A2" => Ok(ActionSymbol::A2),
+            "A3" => Ok(ActionSymbol::A3),
+            "A4" => Ok(ActionSymbol::A4),
+            "A5" => Ok(ActionSymbol::A5),
+            "A6" => Ok(ActionSymbol::A6),
+            "A7" => Ok(ActionSymbol::A7),
+            "A8" => Ok(ActionSymbol::A8),
+            "A9" => Ok(ActionSymbol::A9),
+            "B1" => Ok(ActionSymbol::B1),
+            "B2" => Ok(ActionSymbol::B2),
+            "B3" => Ok(ActionSymbol::B3),
+            "B4" => Ok(ActionSymbol::B4),
+            "B5" => Ok(ActionSymbol::B5),
+            "B6" => Ok(ActionSymbol::B6),
+            "B7" => Ok(ActionSymbol::B7),
+            "B8" => Ok(ActionSymbol::B8),
+            _ => Err(()),
         }
     }
 }

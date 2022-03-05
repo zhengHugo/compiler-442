@@ -19,6 +19,7 @@ impl Derivation {
         let from_symbol = match Symbol::from_string(&*production[0]) {
             Symbol::NonTerminal(n) => n,
             Symbol::Terminal(_) => panic!("Unexpected symbol string"),
+            Symbol::ActionSymbol(actionSymbol) => todo!(),
         };
         let right_symbols: Vec<Symbol> = Regex::new(r" ")
             .unwrap()

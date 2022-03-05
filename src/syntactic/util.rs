@@ -76,10 +76,13 @@ pub fn read_first_follow_set_and_endable() -> (
                             .unwrap()
                             .split(&cells[1])
                             .map(|x| match Symbol::from_string(x.trim()) {
+                                Symbol::Terminal(terminal) => terminal,
                                 Symbol::NonTerminal(_) => {
                                     panic!("Unexpected nonterminal in set table")
                                 }
-                                Symbol::Terminal(terminal) => terminal,
+                                Symbol::ActionSymbol(_) => {
+                                    panic!("Unexpected action symbol in set table")
+                                }
                             })
                             .collect();
                         if cells[3].eq("yes") {
@@ -93,10 +96,13 @@ pub fn read_first_follow_set_and_endable() -> (
                             .split(&cells[2])
                             .filter(|x| !(*x).eq("∅"))
                             .map(|x| match Symbol::from_string(x.trim()) {
+                                Symbol::Terminal(terminal) => terminal,
                                 Symbol::NonTerminal(_) => {
                                     panic!("Unexpected nonterminal in set table")
                                 }
-                                Symbol::Terminal(terminal) => terminal,
+                                Symbol::ActionSymbol(_) => {
+                                    panic!("Unexpected action symbol in set table")
+                                }
                             })
                             .collect();
                         follow_set.insert(key.clone(), follow_terminals);
