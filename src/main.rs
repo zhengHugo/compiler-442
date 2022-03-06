@@ -12,7 +12,7 @@ use std::fs::File;
 fn main() {
     let mut lexer: Lexer = Lexer::new();
     let mut parser = Parser::new();
-    if let Ok(src) = fs::read_to_string("resource/ast/bubblesort.src") {
+    if let Ok(src) = fs::read_to_string("resource/ast/polynomial.src") {
         lexer.read_source(&src);
         parser.parse(lexer.get_tokens());
     } else {

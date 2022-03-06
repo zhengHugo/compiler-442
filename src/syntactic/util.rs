@@ -38,7 +38,7 @@ pub fn read_parsing_table() -> HashMap<(NonTerminal, Terminal), Derivation> {
     }
 
     // separating table key building from table value filling to keep the rust compiler happy :-)
-    if let Ok(lines) = read_lines("resource/syntax/LL(1) Parsing Table.csv") {
+    if let Ok(lines) = read_lines("resource/ast/LL(1) Parsing Table with Actions.csv") {
         for (i, line_result) in lines.enumerate() {
             if let Ok(line) = line_result {
                 let cells = split_string(&*line, r",");

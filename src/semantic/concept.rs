@@ -1,4 +1,5 @@
 use crate::lexical::token::{Token, TokenType, ValidTokenType};
+use std::fmt::{write, Display, Formatter};
 
 #[derive(PartialEq)]
 pub enum Concept {
@@ -9,7 +10,7 @@ pub enum Concept {
 impl Concept {
     pub(crate) fn from_terminal_token(token: Token) -> Result<Self, ()> {
         match token.token_type {
-            TokenType::ValidTokenType(validTokenType) => match validTokenType {
+            TokenType::ValidTokenType(valid_token_type) => match valid_token_type {
                 ValidTokenType::Id => Ok(Concept::AtomicConcept(AtomicConcept {
                     atomic_concept_type: AtomicConceptType::Id,
                     value: token.lexeme,
@@ -69,7 +70,7 @@ impl Concept {
 
     pub fn create_sign(token: Token) -> Result<Self, ()> {
         match token.token_type {
-            TokenType::ValidTokenType(validTokenType) => match validTokenType {
+            TokenType::ValidTokenType(valid_token_type) => match valid_token_type {
                 ValidTokenType::Plus | ValidTokenType::Minus => {
                     Ok(Concept::AtomicConcept(AtomicConcept {
                         atomic_concept_type: AtomicConceptType::Sign,
@@ -91,8 +92,8 @@ impl Concept {
 
     pub fn is_epsilon(&self) -> bool {
         match self {
-            Concept::AtomicConcept(atomicConcept) => matches!(
-                atomicConcept.atomic_concept_type,
+            Concept::AtomicConcept(atomic_concept) => matches!(
+                atomic_concept.atomic_concept_type,
                 AtomicConceptType::Epsilon
             ),
             Concept::CompositeConcept(_) => false,
@@ -100,13 +101,31 @@ impl Concept {
     }
 }
 
+impl Display for Concept {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Concept::AtomicConcept(ac) => ac.to_string(),
+                Concept::CompositeConcept(cc) => cc.to_string(),
+            }
+        )
+    }
+}
 #[derive(PartialEq)]
 pub struct AtomicConcept {
     pub(crate) atomic_concept_type: AtomicConceptType,
     value: String,
 }
 
-#[derive(PartialEq)]
+impl Display for AtomicConcept {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.atomic_concept_type)
+    }
+}
+
+#[derive(PartialEq, Debug)]
 pub enum AtomicConceptType {
     Id,
     FloatLit,
@@ -122,7 +141,7 @@ pub enum AtomicConceptType {
     Epsilon,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum CompositeConcept {
     Dot,
     IndexList,
@@ -156,4 +175,10 @@ pub enum CompositeConcept {
     StructMemberDeclList,
     StructMemberDecl,
     Prog,
+}
+
+impl Display for CompositeConcept {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }

@@ -1,6 +1,8 @@
+use std::fmt::{Display, Formatter};
+
 pub struct Node<T>
 where
-    T: PartialEq,
+    T: PartialEq + Display,
 {
     value: T,
     parent: Option<NodeId>,
@@ -9,7 +11,7 @@ where
 
 impl<T> Node<T>
 where
-    T: PartialEq,
+    T: PartialEq + Display,
 {
     fn new(value: T) -> Self {
         Self {
@@ -24,16 +26,25 @@ where
     }
 }
 
+impl<T> Display for Node<T>
+where
+    T: PartialEq + Display,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+
 pub struct Tree<T>
 where
-    T: PartialEq,
+    T: PartialEq + Display,
 {
     arena: Arena<T>,
 }
 
 impl<T> Tree<T>
 where
-    T: PartialEq,
+    T: PartialEq + Display,
 {
     pub fn new() -> Self {
         Self {
@@ -50,7 +61,7 @@ where
         self.arena.nodes.len() - 1
     }
 
-    pub fn move_node_under(&mut self, child: NodeId, parent: Option<NodeId>) {
+    pub fn move_node_under_prepend(&mut self, child: NodeId, parent: Option<NodeId>) {
         // remove from old parent
         if let Some(old_parent_id) = self.arena.nodes[child as usize].parent {
             let pos = self.arena.nodes[old_parent_id]
@@ -66,7 +77,7 @@ where
         if parent.is_some() {
             self.arena.nodes[parent.unwrap() as usize]
                 .children
-                .push(child);
+                .insert(0, child)
         }
     }
 
@@ -77,18 +88,46 @@ where
     pub fn size(&self) -> usize {
         self.arena.nodes.len()
     }
+
+    fn get_root(&self) -> NodeId {
+        let mut id = self.arena.nodes.len() - 1;
+        while self.arena.nodes[id].parent.is_some() {
+            id = self.arena.nodes[id].parent.unwrap();
+        }
+        id as NodeId
+    }
+
+    fn to_string_from_node(&self, from: &NodeId, depth: usize) -> String {
+        let mut result = String::from("");
+        result.push_str(&*"| ".repeat(depth));
+        result.push_str(&self.arena.nodes[*from as usize].to_string());
+        result.push_str(&*"\n");
+        for child in self.arena.nodes[*from as usize].children.iter() {
+            result.push_str(&*self.to_string_from_node(child, depth + 1))
+        }
+        result
+    }
+}
+
+impl<T> Display for Tree<T>
+where
+    T: PartialEq + Display,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.to_string_from_node(&self.get_root(), 0))
+    }
 }
 
 struct Arena<T>
 where
-    T: PartialEq,
+    T: PartialEq + Display,
 {
     nodes: Vec<Node<T>>,
 }
 
 impl<T> Arena<T>
 where
-    T: PartialEq,
+    T: PartialEq + Display,
 {
     fn new() -> Self {
         Self { nodes: vec![] }

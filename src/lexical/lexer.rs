@@ -143,7 +143,6 @@ impl Lexer {
     fn handle_finalized_token(&mut self, token: Token) -> Option<LexicalError> {
         match token.token_type {
             TokenType::ValidTokenType(_) => {
-                println!("{}", token);
                 self.output_tokens.push(token);
                 None
             }
