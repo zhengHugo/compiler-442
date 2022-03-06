@@ -1,0 +1,30 @@
+Prog
+| FuncDef
+| | Id
+| | FParams
+| | Void
+| | FuncBody
+| | | Assign
+| | | | Dot
+| | | | | FuncCall
+| | | | | | Dot
+| | | | | | | Var
+| | | | | | | | Dot
+| | | | | | | | | Id
+| | | | | | | | | Id
+| | | | | | | | IndexList
+| | | | | | | | | IntLit
+| | | | | | | Id
+| | | | | | AParams
+| | | | | Id
+| | | | IntLit
+| | | FuncCall
+| | | | Dot
+| | | | | Dot
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
+| | | | | | | | IntLit
+| | | | | | Id
+| | | | | Id
+| | | | AParams

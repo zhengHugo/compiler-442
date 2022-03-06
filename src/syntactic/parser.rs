@@ -26,7 +26,10 @@ impl Parser {
             follow_set,
         }
     }
-    pub fn parse(&mut self, tokens: Vec<Token>) -> Result<Tree<SymbolOrToken>, SyntaxError> {
+    pub fn parse(
+        &mut self,
+        tokens: Vec<Token>,
+    ) -> Result<(Tree<SymbolOrToken>, Tree<Concept>), SyntaxError> {
         // debug only
         let mut error_file = File::create("resource/syntax/outsyntaxerrors").unwrap();
         let mut derivation_file = File::create("resource/syntax/outderivations").unwrap();
@@ -178,8 +181,10 @@ impl Parser {
                 SymbolOrToken::Token(_) => panic!("Token appear on the parsing stack"),
             }
         }
+        // let mut ast_output_file = File::create("resource/ast/outderivations").unwrap();
+        // ast_output_file.write_all(format!("{}", ast).as_bytes());
         println!("{}", ast);
-        Ok(parsing_tree)
+        Ok((parsing_tree, ast))
     }
 
     fn handle_derivation(
@@ -630,13 +635,13 @@ impl Parser {
         derivation_file: &mut File,
         derivation: &Derivation,
     ) -> IOResult<()> {
-        // derivation_file.write_all(format!("{}\n", derivation).as_ref())
+        derivation_file.write_all(format!("{}\n", derivation).as_ref());
         println!("{}", derivation);
         Ok(())
     }
 
     fn write_match(&self, derivation_file: &mut File, lookahead: &ValidTokenType) -> IOResult<()> {
-        // derivation_file.write_all(format!("match {}\n", lookahead).as_ref())
+        derivation_file.write_all(format!("match {}\n", lookahead).as_ref());
         println!("match {}", lookahead);
         Ok(())
     }
@@ -647,7 +652,7 @@ pub struct SyntaxError {}
 
 impl Display for SyntaxError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        write!(f, "{:?}", self)
     }
 }
 
