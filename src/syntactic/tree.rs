@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-pub struct Node<T>
+struct Node<T>
 where
     T: PartialEq + Display,
 {
@@ -61,6 +61,8 @@ where
         self.arena.nodes.len() - 1
     }
 
+    /// move a node child under another node parent.
+    /// Child is prepended to the children list of parent
     pub fn move_node_under_prepend(&mut self, child: NodeId, parent: Option<NodeId>) {
         // remove from old parent
         if let Some(old_parent_id) = self.arena.nodes[child as usize].parent {
@@ -89,12 +91,16 @@ where
         self.arena.nodes.len()
     }
 
-    fn get_root(&self) -> NodeId {
+    pub fn get_root(&self) -> NodeId {
         let mut id = self.arena.nodes.len() - 1;
         while self.arena.nodes[id].parent.is_some() {
             id = self.arena.nodes[id].parent.unwrap();
         }
         id as NodeId
+    }
+
+    pub fn get_children(&self, parent_id: NodeId) -> Vec<NodeId> {
+        self.arena.nodes[parent_id].children.clone()
     }
 
     fn to_string_from_node(&self, from: &NodeId, depth: usize) -> String {

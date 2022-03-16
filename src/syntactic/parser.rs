@@ -183,7 +183,7 @@ impl Parser {
         }
         // let mut ast_output_file = File::create("resource/ast/outderivations").unwrap();
         // ast_output_file.write_all(format!("{}", ast).as_bytes());
-        println!("{}", ast);
+        // println!("{}", ast);
         Ok((parsing_tree, ast))
     }
 
@@ -232,7 +232,7 @@ impl Parser {
         ast: &mut Tree<Concept>,
         outstanding_dot: &mut bool,
     ) {
-        println!("perform action {:?}", action_symbol);
+        // println!("perform action {:?}", action_symbol);
         match action_symbol {
             ActionSymbol::A // id, floatLit, intLit
             | ActionSymbol::K // relOp
@@ -636,13 +636,13 @@ impl Parser {
         derivation: &Derivation,
     ) -> IOResult<()> {
         derivation_file.write_all(format!("{}\n", derivation).as_ref());
-        println!("{}", derivation);
+        // println!("{}", derivation);
         Ok(())
     }
 
     fn write_match(&self, derivation_file: &mut File, lookahead: &ValidTokenType) -> IOResult<()> {
         derivation_file.write_all(format!("match {}\n", lookahead).as_ref());
-        println!("match {}", lookahead);
+        // println!("match {}", lookahead);
         Ok(())
     }
 }

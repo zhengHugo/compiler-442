@@ -2,29 +2,24 @@ Prog
 | FuncDef
 | | Id
 | | FParams
+| | | FParam
+| | | | Id
+| | | | Type
+| | | | | Integer
+| | | | ArraySizes
+| | | FParam
+| | | | Id
+| | | | Type
+| | | | | Integer
+| | | | ArraySizes
 | | Void
 | | FuncBody
 | | | Assign
-| | | | Dot
-| | | | | FuncCall
-| | | | | | Dot
-| | | | | | | Var
-| | | | | | | | Dot
-| | | | | | | | | Id
-| | | | | | | | | Id
-| | | | | | | | IndexList
-| | | | | | | | | IntLit
-| | | | | | | Id
-| | | | | | AParams
-| | | | | Id
-| | | | IntLit
-| | | FuncCall
-| | | | Dot
+| | | | Id
+| | | | Var
 | | | | | Dot
 | | | | | | Var
 | | | | | | | Id
 | | | | | | | IndexList
-| | | | | | | | IntLit
 | | | | | | Id
-| | | | | Id
-| | | | AParams
+| | | | | IndexList

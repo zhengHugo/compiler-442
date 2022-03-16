@@ -1,6 +1,11 @@
-func main()
+func printArray(arr: integer[], size: integer) -> void
 {
-  let f1: LINEAR;
-  let f2: QUADRATIC;
-  f1 = f1.f1[f1].f1();
+  let n: integer;
+  let i: integer;
+  n = size;
+  i = 0;
+  while (i<n) {
+    write(arr[i]);
+      i = i+1;
+  };
 }

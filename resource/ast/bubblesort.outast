@@ -19,6 +19,9 @@ Prog
 | | | | Type
 | | | | | Integer
 | | | | ArraySizes
+| | | Assign
+| | | | Id
+| | | | IntLit
 | | | VarDecl
 | | | | Id
 | | | | Type

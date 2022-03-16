@@ -1,5 +1,7 @@
 use crate::lexical::token::{Token, TokenType, ValidTokenType};
+use crate::semantic::visitor::Visitable;
 use std::fmt::{Display, Formatter};
+use std::ops::Deref;
 
 #[derive(PartialEq)]
 pub enum Concept {
@@ -99,6 +101,24 @@ impl Concept {
             Concept::CompositeConcept(_) => false,
         }
     }
+
+    pub fn get_composite_concept(&self) -> CompositeConcept {
+        match self {
+            Concept::AtomicConcept(_) => {
+                panic!("Trying to get call get_composite_concept on an atomic concept")
+            }
+            Concept::CompositeConcept(cc) => (*cc).clone(),
+        }
+    }
+
+    pub fn get_atomic_concept(&self) -> AtomicConcept {
+        match self {
+            Concept::AtomicConcept(ac) => (*ac).clone(),
+            Concept::CompositeConcept(_) => {
+                panic!("Trying to get call get_atomic_concept on a composite concept")
+            }
+        }
+    }
 }
 
 impl Display for Concept {
@@ -113,10 +133,16 @@ impl Display for Concept {
         )
     }
 }
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub struct AtomicConcept {
-    pub(crate) atomic_concept_type: AtomicConceptType,
+    pub atomic_concept_type: AtomicConceptType,
     value: String,
+}
+
+impl AtomicConcept {
+    pub fn get_value(&self) -> String {
+        self.value.clone()
+    }
 }
 
 impl Display for AtomicConcept {
@@ -125,7 +151,7 @@ impl Display for AtomicConcept {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum AtomicConceptType {
     Id,
     FloatLit,
@@ -141,7 +167,7 @@ pub enum AtomicConceptType {
     Epsilon,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum CompositeConcept {
     Dot,
     IndexList,
