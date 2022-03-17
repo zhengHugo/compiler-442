@@ -44,6 +44,10 @@ impl QUADRATIC {
     new_function.c = C;
     return (new_function);
   }
+
+  func f(a: int) -> int {
+    return (1);
+  }
 }
 
 impl LINEAR {
@@ -62,4 +66,3 @@ impl LINEAR {
     return (result);
   }
 }
-

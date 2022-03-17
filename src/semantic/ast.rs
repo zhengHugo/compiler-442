@@ -1,4 +1,5 @@
 use crate::semantic::concept::{CompositeConcept, Concept};
+use crate::semantic::semantic_error::{SemanticErrType, SemanticError};
 use crate::semantic::symbol_table::{SymbolKind, SymbolTable, SymbolTableEntry, SymbolType};
 use crate::syntactic::tree::{NodeId, Tree};
 use std::collections::HashMap;
@@ -72,48 +73,7 @@ pub fn create_table(
             // CompositeConcept::FuncBody => {}
             // CompositeConcept::FuncDecl => {}
             // CompositeConcept::FuncDefList => {}
-            CompositeConcept::ImplDef => {
-                let impl_def_children = ast.get_children(node);
-                let target_struct_name = ast
-                    .get_node_value(impl_def_children[0])
-                    .get_atomic_concept()
-                    .get_value();
-                let table_name = format!("{}:{}", name_prefix, target_struct_name);
-
-                let mut new_entry_set = vec![];
-                for func_def_node in ast.get_children(impl_def_children[1]) {
-                    let new_entry = match SymbolTableEntry::from_node(
-                        func_def_node,
-                        ast,
-                        table_container,
-                        table_name.clone(),
-                    ) {
-                        None => {
-                            todo!("semantic error: not function definition in impl");
-                            panic!()
-                        }
-                        Some(entry) => entry,
-                    };
-                    new_entry_set.push(new_entry);
-                }
-
-                match table_container.get_mut(&*table_name) {
-                    None => {
-                        todo!("struct impl without struct def");
-                        panic!()
-                    }
-                    Some(table) => {
-                        for new_entry in new_entry_set {
-                            let old_entry = table.insert(new_entry);
-                            if old_entry.is_none() {
-                                todo!("semantic error: func impl without decl");
-                                panic!()
-                            }
-                        }
-                    }
-                }
-                "".to_string()
-            }
+            //CompositeConcept::ImplDef => {}
             CompositeConcept::StructDecl => {
                 let struct_decl_children = ast.get_children(node);
                 let struct_name = ast

@@ -1,5 +1,6 @@
 use crate::semantic::ast::{create_table, AbstractSyntaxTree};
 use crate::semantic::concept::{AtomicConcept, AtomicConceptType, CompositeConcept, Concept};
+use crate::semantic::semantic_error::{SemanticErrType, SemanticError};
 use crate::syntactic::tree::NodeId;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
@@ -7,7 +8,7 @@ use std::fmt::{Display, Formatter};
 #[derive(Debug)]
 pub struct SymbolTable {
     name: String,
-    entries: HashMap<String, SymbolTableEntry>,
+    entries: HashMap<(String, SymbolType), SymbolTableEntry>,
 }
 
 impl SymbolTable {
@@ -22,12 +23,61 @@ impl SymbolTable {
         self.name.clone()
     }
 
-    pub fn get_entry(&self, entry_name: String) -> Option<&SymbolTableEntry> {
-        self.entries.get(&*entry_name)
-    }
-
     pub fn insert(&mut self, entry: SymbolTableEntry) -> Option<SymbolTableEntry> {
-        self.entries.insert(entry.name.clone(), entry)
+        let key = (entry.name.clone(), entry.symbol_type.clone());
+        if matches!(entry.kind, SymbolKind::Function) {
+            // to insert function
+            if self.entries.contains_key(&key) {
+                if self.entries.get(&key).unwrap().link.is_none() {
+                    // existing entry has no link: implementing
+                    self.entries.insert(key, entry)
+                } else {
+                    // existing entry has link: duplicate definition
+                    SemanticError::report(
+                        SemanticErrType::Error,
+                        format!(
+                            "function {} of the same type is already defined.",
+                            &entry.name
+                        ),
+                    );
+                    None
+                }
+            } else {
+                if entry.link.is_none() {
+                    // no existing entry and new entry has no link: function decl
+                    if self.entries.keys().any(|key| key.0.eq(&entry.name)) {
+                        SemanticError::report(
+                            SemanticErrType::Warning,
+                            format!("function {} is overloaded", &entry.name),
+                        );
+                    }
+                    self.entries.insert(key, entry)
+                } else {
+                    // no existing entry and new entry has link: impl without decl
+                    SemanticError::report(
+                        SemanticErrType::Error,
+                        format!(
+                            "definition provided for undeclared function {}. ",
+                            &entry.name
+                        ),
+                    );
+                    None
+                }
+            }
+        } else {
+            // insert entries other than function
+            if self.entries.keys().any(|key| key.0.eq(&entry.name)) {
+                // name is already in the table: duplicate definition
+                SemanticError::report(
+                    SemanticErrType::Error,
+                    format!("{} is already define. ", &entry.name),
+                );
+                None
+            } else {
+                // name is new, then key must be new
+                self.entries.insert(key, entry)
+            }
+        }
     }
 }
 
@@ -125,6 +175,45 @@ impl SymbolTableEntry {
                     name_prefix,
                 )
             }
+            CompositeConcept::ImplDef => {
+                let impl_def_children = ast.get_children(node);
+                let target_struct_name = ast
+                    .get_node_value(impl_def_children[0])
+                    .get_atomic_concept()
+                    .get_value();
+                let table_name = format!("{}:{}", name_prefix, target_struct_name);
+
+                let mut new_entry_set = vec![];
+                for func_def_node in ast.get_children(impl_def_children[1]) {
+                    let new_entry = match SymbolTableEntry::from_node(
+                        func_def_node,
+                        ast,
+                        table_container,
+                        table_name.clone(),
+                    ) {
+                        None => {
+                            panic!("Something other than funcDef in impl")
+                        }
+                        Some(entry) => entry,
+                    };
+                    new_entry_set.push(new_entry);
+                }
+
+                match table_container.get_mut(&*table_name) {
+                    None => {
+                        SemanticError::report(
+                            SemanticErrType::Error,
+                            format!("struct {} is undefined", target_struct_name),
+                        );
+                    }
+                    Some(table) => {
+                        for new_entry in new_entry_set {
+                            table.insert(new_entry);
+                        }
+                    }
+                }
+                None
+            }
             _ => None,
         }
     }
@@ -149,7 +238,7 @@ pub enum SymbolKind {
     Class,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SymbolType {
     name: String,
 }
@@ -237,6 +326,15 @@ impl SymbolType {
 
     pub fn get_name(&self) -> String {
         self.name.clone()
+    }
+
+    fn is_f_params_same(&self, other: &SymbolType) -> bool {
+        if !self.name.contains(":") || !other.name.contains(":") {
+            panic!("Not function type")
+        }
+        let self_param_split = self.name.split(":").collect::<Vec<&str>>();
+        let other_param_split = other.name.split(":").collect::<Vec<&str>>();
+        self_param_split[1].eq(other_param_split[1])
     }
 }
 

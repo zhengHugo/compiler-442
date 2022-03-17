@@ -1,25 +1,343 @@
 Prog
-| FuncDef
+| StructDecl
 | | Id
-| | FParams
-| | | FParam
+| | InheritsList
+| | StructMemberDeclList
+| | | StructMemberDecl
+| | | | Visibility
+| | | | FuncDecl
+| | | | | Id
+| | | | | FParams
+| | | | | | FParam
+| | | | | | | Id
+| | | | | | | Type
+| | | | | | | | Float
+| | | | | | | ArraySizes
+| | | | | Type
+| | | | | | Float
+| StructDecl
+| | Id
+| | InheritsList
+| | | Id
+| | StructMemberDeclList
+| | | StructMemberDecl
+| | | | Visibility
+| | | | VarDecl
+| | | | | Id
+| | | | | Type
+| | | | | | Float
+| | | | | ArraySizes
+| | | StructMemberDecl
+| | | | Visibility
+| | | | VarDecl
+| | | | | Id
+| | | | | Type
+| | | | | | Float
+| | | | | ArraySizes
+| | | StructMemberDecl
+| | | | Visibility
+| | | | FuncDecl
+| | | | | Id
+| | | | | FParams
+| | | | | | FParam
+| | | | | | | Id
+| | | | | | | Type
+| | | | | | | | Float
+| | | | | | | ArraySizes
+| | | | | | FParam
+| | | | | | | Id
+| | | | | | | Type
+| | | | | | | | Float
+| | | | | | | ArraySizes
+| | | | | Type
+| | | | | | Id
+| | | StructMemberDecl
+| | | | Visibility
+| | | | FuncDecl
+| | | | | Id
+| | | | | FParams
+| | | | | | FParam
+| | | | | | | Id
+| | | | | | | Type
+| | | | | | | | Float
+| | | | | | | ArraySizes
+| | | | | Type
+| | | | | | Float
+| StructDecl
+| | Id
+| | InheritsList
+| | | Id
+| | StructMemberDeclList
+| | | StructMemberDecl
+| | | | Visibility
+| | | | VarDecl
+| | | | | Id
+| | | | | Type
+| | | | | | Float
+| | | | | ArraySizes
+| | | StructMemberDecl
+| | | | Visibility
+| | | | VarDecl
+| | | | | Id
+| | | | | Type
+| | | | | | Float
+| | | | | ArraySizes
+| | | StructMemberDecl
+| | | | Visibility
+| | | | VarDecl
+| | | | | Id
+| | | | | Type
+| | | | | | Float
+| | | | | ArraySizes
+| | | StructMemberDecl
+| | | | Visibility
+| | | | FuncDecl
+| | | | | Id
+| | | | | FParams
+| | | | | | FParam
+| | | | | | | Id
+| | | | | | | Type
+| | | | | | | | Float
+| | | | | | | ArraySizes
+| | | | | | FParam
+| | | | | | | Id
+| | | | | | | Type
+| | | | | | | | Float
+| | | | | | | ArraySizes
+| | | | | | FParam
+| | | | | | | Id
+| | | | | | | Type
+| | | | | | | | Float
+| | | | | | | ArraySizes
+| | | | | Type
+| | | | | | Id
+| | | StructMemberDecl
+| | | | Visibility
+| | | | FuncDecl
+| | | | | Id
+| | | | | FParams
+| | | | | | FParam
+| | | | | | | Id
+| | | | | | | Type
+| | | | | | | | Float
+| | | | | | | ArraySizes
+| | | | | Type
+| | | | | | Float
+| ImplDef
+| | Id
+| | FuncDefList
+| | | FuncDef
 | | | | Id
+| | | | FParams
+| | | | | FParam
+| | | | | | Id
+| | | | | | Type
+| | | | | | | Float
+| | | | | | ArraySizes
 | | | | Type
-| | | | | Integer
-| | | | ArraySizes
-| | | FParam
+| | | | | Float
+| | | | FuncBody
+| | | | | Return
+| | | | | | IntLit
+| ImplDef
+| | Id
+| | FuncDefList
+| | | FuncDef
 | | | | Id
+| | | | FParams
+| | | | | FParam
+| | | | | | Id
+| | | | | | Type
+| | | | | | | Float
+| | | | | | ArraySizes
 | | | | Type
-| | | | | Integer
-| | | | ArraySizes
-| | Void
-| | FuncBody
-| | | Assign
-| | | | Id
-| | | | Var
-| | | | | Dot
+| | | | | Float
+| | | | FuncBody
+| | | | | VarDecl
+| | | | | | Id
+| | | | | | Type
+| | | | | | | Float
+| | | | | | ArraySizes
+| | | | | Assign
+| | | | | | Id
 | | | | | | Var
 | | | | | | | Id
 | | | | | | | IndexList
+| | | | | Assign
 | | | | | | Id
-| | | | | IndexList
+| | | | | | AddExpr
+| | | | | | | MultExpr
+| | | | | | | | Var
+| | | | | | | | | Id
+| | | | | | | | | IndexList
+| | | | | | | | MultiOp
+| | | | | | | | Var
+| | | | | | | | | Id
+| | | | | | | | | IndexList
+| | | | | | | AddOp
+| | | | | | | Var
+| | | | | | | | Id
+| | | | | | | | IndexList
+| | | | | Assign
+| | | | | | Id
+| | | | | | AddExpr
+| | | | | | | MultExpr
+| | | | | | | | Var
+| | | | | | | | | Id
+| | | | | | | | | IndexList
+| | | | | | | | MultiOp
+| | | | | | | | Var
+| | | | | | | | | Id
+| | | | | | | | | IndexList
+| | | | | | | AddOp
+| | | | | | | Var
+| | | | | | | | Id
+| | | | | | | | IndexList
+| | | | | Return
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
+| | | FuncDef
+| | | | Id
+| | | | FParams
+| | | | | FParam
+| | | | | | Id
+| | | | | | Type
+| | | | | | | Float
+| | | | | | ArraySizes
+| | | | | FParam
+| | | | | | Id
+| | | | | | Type
+| | | | | | | Float
+| | | | | | ArraySizes
+| | | | | FParam
+| | | | | | Id
+| | | | | | Type
+| | | | | | | Float
+| | | | | | ArraySizes
+| | | | Type
+| | | | | Id
+| | | | FuncBody
+| | | | | VarDecl
+| | | | | | Id
+| | | | | | Type
+| | | | | | | Id
+| | | | | | ArraySizes
+| | | | | Assign
+| | | | | | Dot
+| | | | | | | Id
+| | | | | | | Id
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
+| | | | | Assign
+| | | | | | Dot
+| | | | | | | Id
+| | | | | | | Id
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
+| | | | | Assign
+| | | | | | Dot
+| | | | | | | Id
+| | | | | | | Id
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
+| | | | | Return
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
+| | | FuncDef
+| | | | Id
+| | | | FParams
+| | | | | FParam
+| | | | | | Id
+| | | | | | Type
+| | | | | | | Id
+| | | | | | ArraySizes
+| | | | Type
+| | | | | Id
+| | | | FuncBody
+| | | | | Return
+| | | | | | IntLit
+| ImplDef
+| | Id
+| | FuncDefList
+| | | FuncDef
+| | | | Id
+| | | | FParams
+| | | | | FParam
+| | | | | | Id
+| | | | | | Type
+| | | | | | | Float
+| | | | | | ArraySizes
+| | | | | FParam
+| | | | | | Id
+| | | | | | Type
+| | | | | | | Float
+| | | | | | ArraySizes
+| | | | Type
+| | | | | Id
+| | | | FuncBody
+| | | | | VarDecl
+| | | | | | Id
+| | | | | | Type
+| | | | | | | Id
+| | | | | | ArraySizes
+| | | | | Assign
+| | | | | | Dot
+| | | | | | | Id
+| | | | | | | Id
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
+| | | | | Assign
+| | | | | | Dot
+| | | | | | | Id
+| | | | | | | Id
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
+| | | | | Return
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
+| | | FuncDef
+| | | | Id
+| | | | FParams
+| | | | | FParam
+| | | | | | Id
+| | | | | | Type
+| | | | | | | Float
+| | | | | | ArraySizes
+| | | | Type
+| | | | | Float
+| | | | FuncBody
+| | | | | VarDecl
+| | | | | | Id
+| | | | | | Type
+| | | | | | | Float
+| | | | | | ArraySizes
+| | | | | Assign
+| | | | | | Id
+| | | | | | FloatLit
+| | | | | Assign
+| | | | | | Id
+| | | | | | AddExpr
+| | | | | | | MultExpr
+| | | | | | | | Var
+| | | | | | | | | Id
+| | | | | | | | | IndexList
+| | | | | | | | MultiOp
+| | | | | | | | Var
+| | | | | | | | | Id
+| | | | | | | | | IndexList
+| | | | | | | AddOp
+| | | | | | | Var
+| | | | | | | | Id
+| | | | | | | | IndexList
+| | | | | Return
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
