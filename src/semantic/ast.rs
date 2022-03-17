@@ -6,10 +6,11 @@ use std::collections::HashMap;
 
 pub type AbstractSyntaxTree = Tree<Concept>;
 
-pub fn generate_symbol_table(ast: &AbstractSyntaxTree) -> HashMap<String, SymbolTable> {
+pub fn generate_symbol_tables(ast: &AbstractSyntaxTree) -> HashMap<String, SymbolTable> {
     let mut table_container = HashMap::new();
     let root = ast.get_root();
     create_table(ast, root, &mut table_container, "".to_string());
+    check_func_def(&table_container);
     table_container
 }
 
@@ -140,6 +141,23 @@ pub fn create_table(
             _ => panic!(""),
         },
     }
-    // pre-actions
-    // post-actions
+}
+
+fn check_func_def(table_container: &HashMap<String, SymbolTable>) {
+    // for each table, each function should have link
+    for (table_name, table) in table_container {
+        for entry in table.get_entries() {
+            if matches!(entry.kind, SymbolKind::Function) {
+                if entry.link.is_none() {
+                    SemanticError::report(
+                        SemanticErrType::Error,
+                        format!(
+                            "function {}:{} is declared but not defined",
+                            table_name, entry.name
+                        ),
+                    )
+                }
+            }
+        }
+    }
 }

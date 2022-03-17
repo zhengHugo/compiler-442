@@ -4,7 +4,7 @@ mod lexical;
 mod semantic;
 mod syntactic;
 
-use crate::semantic::ast::{generate_symbol_table, AbstractSyntaxTree};
+use crate::semantic::ast::{generate_symbol_tables, AbstractSyntaxTree};
 use crate::syntactic::parser::Parser;
 use lexical::lexer::Lexer;
 use std::fs;
@@ -20,7 +20,7 @@ fn main() {
         let (_, ast) = parser.parse(lexer.get_tokens()).unwrap();
         let mut outast_file = File::create(path.to_string() + ".outast").unwrap();
         outast_file.write_all(format!("{}", &ast).as_bytes());
-        let tables = generate_symbol_table(&ast as &AbstractSyntaxTree);
+        let tables = generate_symbol_tables(&ast as &AbstractSyntaxTree);
         for (_, table) in tables.iter() {
             println!("{}", table);
         }

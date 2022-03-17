@@ -137,22 +137,6 @@ Prog
 | | | | Type
 | | | | | Float
 | | | | FuncBody
-| | | | | Return
-| | | | | | IntLit
-| ImplDef
-| | Id
-| | FuncDefList
-| | | FuncDef
-| | | | Id
-| | | | FParams
-| | | | | FParam
-| | | | | | Id
-| | | | | | Type
-| | | | | | | Float
-| | | | | | ArraySizes
-| | | | Type
-| | | | | Float
-| | | | FuncBody
 | | | | | VarDecl
 | | | | | | Id
 | | | | | | Type
@@ -248,19 +232,6 @@ Prog
 | | | | | | Var
 | | | | | | | Id
 | | | | | | | IndexList
-| | | FuncDef
-| | | | Id
-| | | | FParams
-| | | | | FParam
-| | | | | | Id
-| | | | | | Type
-| | | | | | | Id
-| | | | | | ArraySizes
-| | | | Type
-| | | | | Id
-| | | | FuncBody
-| | | | | Return
-| | | | | | IntLit
 | ImplDef
 | | Id
 | | FuncDefList

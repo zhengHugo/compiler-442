@@ -23,6 +23,10 @@ impl SymbolTable {
         self.name.clone()
     }
 
+    pub fn get_entries(&self) -> Vec<SymbolTableEntry> {
+        self.entries.values().cloned().collect()
+    }
+
     pub fn insert(&mut self, entry: SymbolTableEntry) -> Option<SymbolTableEntry> {
         let key = (entry.name.clone(), entry.symbol_type.clone());
         if matches!(entry.kind, SymbolKind::Function) {
@@ -91,7 +95,7 @@ impl Display for SymbolTable {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SymbolTableEntry {
     pub name: String,
     pub kind: SymbolKind,
@@ -229,7 +233,7 @@ impl Display for SymbolTableEntry {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SymbolKind {
     Variable,
     Function,

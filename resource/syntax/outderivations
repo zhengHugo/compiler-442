@@ -257,51 +257,6 @@ match KwFloat
 FuncBody -> ValidTokenType(OpenCuBr) E ReptFuncBody1 A8 ValidTokenType(CloseCuBr)
 match OpenCuBr
 ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
-VarDeclOrStat -> Statement
-Statement -> ValidTokenType(KwReturn) ValidTokenType(OpenPar) Expr V ValidTokenType(ClosePar) ValidTokenType(Semi)
-match KwReturn
-match OpenPar
-Expr -> ArithExpr Expr2
-ArithExpr -> Term RightRecArithExpr
-Term -> Factor RightRecTerm
-Factor -> ValidTokenType(Integer) A
-match Integer
-RightRecTerm -> EPSILON
-RightRecArithExpr -> EPSILON
-Expr2 -> EPSILON
-match ClosePar
-match Semi
-ReptFuncBody1 -> EPSILON
-match CloseCuBr
-ReptImplDef3 -> EPSILON
-match CloseCuBr
-ReptProg0 -> StructOrImplOrFunc ReptProg0
-StructOrImplOrFunc -> ImplDef
-ImplDef -> ValidTokenType(KwImpl) ValidTokenType(Id) A ValidTokenType(OpenCuBr) E ReptImplDef3 B1 ValidTokenType(CloseCuBr) B2
-match KwImpl
-match Id
-match OpenCuBr
-ReptImplDef3 -> FuncDef ReptImplDef3
-FuncDef -> FuncHead FuncBody A6
-FuncHead -> ValidTokenType(KwFunc) ValidTokenType(Id) A ValidTokenType(OpenPar) FParams ValidTokenType(ClosePar) ValidTokenType(Arrow) ReturnType
-match KwFunc
-match Id
-match OpenPar
-FParams -> E ValidTokenType(Id) A ValidTokenType(Colon) Type E ReptFParams3 A1 A2 ReptFParams4 A4
-match Id
-match Colon
-Type -> ValidTokenType(KwFloat) A A3
-match KwFloat
-ReptFParams3 -> EPSILON
-ReptFParams4 -> EPSILON
-match ClosePar
-match Arrow
-ReturnType -> Type
-Type -> ValidTokenType(KwFloat) A A3
-match KwFloat
-FuncBody -> ValidTokenType(OpenCuBr) E ReptFuncBody1 A8 ValidTokenType(CloseCuBr)
-match OpenCuBr
-ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
 VarDeclOrStat -> VarDecl
 VarDecl -> ValidTokenType(KwLet) ValidTokenType(Id) A ValidTokenType(Colon) Type E ReptVarDecl4 A1 A7 ValidTokenType(Semi)
 match KwLet
@@ -549,43 +504,6 @@ match Id
 Factor2 -> E ReptIdNest1 C D
 ReptIdNest1 -> EPSILON
 ReptVarOrFuncCall -> EPSILON
-RightRecTerm -> EPSILON
-RightRecArithExpr -> EPSILON
-Expr2 -> EPSILON
-match ClosePar
-match Semi
-ReptFuncBody1 -> EPSILON
-match CloseCuBr
-ReptImplDef3 -> FuncDef ReptImplDef3
-FuncDef -> FuncHead FuncBody A6
-FuncHead -> ValidTokenType(KwFunc) ValidTokenType(Id) A ValidTokenType(OpenPar) FParams ValidTokenType(ClosePar) ValidTokenType(Arrow) ReturnType
-match KwFunc
-match Id
-match OpenPar
-FParams -> E ValidTokenType(Id) A ValidTokenType(Colon) Type E ReptFParams3 A1 A2 ReptFParams4 A4
-match Id
-match Colon
-Type -> ValidTokenType(Id) A A3
-match Id
-ReptFParams3 -> EPSILON
-ReptFParams4 -> EPSILON
-match ClosePar
-match Arrow
-ReturnType -> Type
-Type -> ValidTokenType(Id) A A3
-match Id
-FuncBody -> ValidTokenType(OpenCuBr) E ReptFuncBody1 A8 ValidTokenType(CloseCuBr)
-match OpenCuBr
-ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
-VarDeclOrStat -> Statement
-Statement -> ValidTokenType(KwReturn) ValidTokenType(OpenPar) Expr V ValidTokenType(ClosePar) ValidTokenType(Semi)
-match KwReturn
-match OpenPar
-Expr -> ArithExpr Expr2
-ArithExpr -> Term RightRecArithExpr
-Term -> Factor RightRecTerm
-Factor -> ValidTokenType(Integer) A
-match Integer
 RightRecTerm -> EPSILON
 RightRecArithExpr -> EPSILON
 Expr2 -> EPSILON
