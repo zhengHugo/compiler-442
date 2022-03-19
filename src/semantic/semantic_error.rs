@@ -7,14 +7,16 @@ pub struct SemanticError {
 }
 
 impl SemanticError {
-    pub fn report(error_type: SemanticErrType, message: String) {
-        println!(
-            "{}",
-            Self {
-                error_type,
-                message
-            }
-        )
+    pub fn report_error(message: &str) -> Self {
+        Self::report(SemanticErrType::Error, message)
+    }
+    pub fn report(error_type: SemanticErrType, message: &str) -> Self {
+        let e = Self {
+            error_type,
+            message: message.to_string(),
+        };
+        println!("{}", e);
+        e
     }
 }
 

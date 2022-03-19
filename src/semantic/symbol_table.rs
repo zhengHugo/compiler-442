@@ -1,5 +1,5 @@
 use crate::semantic::ast::{create_table, AbstractSyntaxTree};
-use crate::semantic::concept::{AtomicConcept, AtomicConceptType, CompositeConcept, Concept};
+use crate::semantic::concept::{AtomicConceptType, CompositeConcept, Concept};
 use crate::semantic::semantic_error::{SemanticErrType, SemanticError};
 use crate::syntactic::tree::NodeId;
 use std::collections::HashMap;
@@ -19,12 +19,41 @@ impl SymbolTable {
         }
     }
 
-    pub fn get_name(&self) -> String {
+    pub fn get_table_name(&self) -> String {
         self.name.clone()
     }
 
-    pub fn get_entries(&self) -> Vec<SymbolTableEntry> {
+    pub fn get_all_entries(&self) -> Vec<SymbolTableEntry> {
         self.entries.values().cloned().collect()
+    }
+
+    pub fn get_all_entries_by_name(&self, entry_name: &str) -> Vec<SymbolTableEntry> {
+        self.entries
+            .values()
+            .cloned()
+            .filter(|entry| entry.name.eq(entry_name))
+            .collect::<Vec<SymbolTableEntry>>()
+    }
+
+    pub fn get_entry_by_name_and_type(
+        &self,
+        entry_name: &str,
+        entry_type: &str,
+    ) -> Option<&SymbolTableEntry> {
+        self.entries.get(&(
+            entry_name.to_string(),
+            SymbolType {
+                name: entry_type.to_string(),
+            },
+        ))
+    }
+
+    pub fn get_all_entries_by_kind(&self, symbol_kind: SymbolKind) -> Vec<SymbolTableEntry> {
+        self.entries
+            .values()
+            .cloned()
+            .filter(|entry| entry.kind.eq(&symbol_kind))
+            .collect::<Vec<SymbolTableEntry>>()
     }
 
     pub fn insert(&mut self, entry: SymbolTableEntry) -> Option<SymbolTableEntry> {
@@ -37,13 +66,10 @@ impl SymbolTable {
                     self.entries.insert(key, entry)
                 } else {
                     // existing entry has link: duplicate definition
-                    SemanticError::report(
-                        SemanticErrType::Error,
-                        format!(
-                            "function {} of the same type is already defined.",
-                            &entry.name
-                        ),
-                    );
+                    SemanticError::report_error(&format!(
+                        "function {} of the same type is already defined.",
+                        &entry.name
+                    ));
                     None
                 }
             } else {
@@ -52,19 +78,16 @@ impl SymbolTable {
                     if self.entries.keys().any(|key| key.0.eq(&entry.name)) {
                         SemanticError::report(
                             SemanticErrType::Warning,
-                            format!("function {} is overloaded", &entry.name),
+                            &format!("function {} is overloaded", &entry.name),
                         );
                     }
                     self.entries.insert(key, entry)
                 } else {
                     // no existing entry and new entry has link: impl without decl
-                    SemanticError::report(
-                        SemanticErrType::Error,
-                        format!(
-                            "definition provided for undeclared function {}. ",
-                            &entry.name
-                        ),
-                    );
+                    SemanticError::report_error(&format!(
+                        "definition provided for undeclared function {}. ",
+                        &entry.name
+                    ));
                     None
                 }
             }
@@ -72,10 +95,7 @@ impl SymbolTable {
             // insert entries other than function
             if self.entries.keys().any(|key| key.0.eq(&entry.name)) {
                 // name is already in the table: duplicate definition
-                SemanticError::report(
-                    SemanticErrType::Error,
-                    format!("{} is already define. ", &entry.name),
-                );
+                SemanticError::report_error(&format!("{} is already define. ", &entry.name));
                 None
             } else {
                 // name is new, then key must be new
@@ -87,10 +107,31 @@ impl SymbolTable {
 
 impl Display for SymbolTable {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "=========================================================\n"
+        );
         write!(f, "{}\n", self.name);
+        write!(
+            f,
+            "---------------------------------------------------------\n"
+        );
+        write!(
+            f,
+            "{0: <14} | {1: <14} | {2: <14} | {3: <14}\n",
+            "name", "kind", "type", "link"
+        );
+        write!(
+            f,
+            "---------------------------------------------------------\n"
+        );
         for (_, entry) in self.entries.iter() {
             write!(f, "{}\n", entry);
         }
+        write!(
+            f,
+            "=========================================================\n"
+        );
         Ok(())
     }
 }
@@ -152,7 +193,7 @@ impl SymbolTableEntry {
                     name,
                     kind: SymbolKind::Class,
                     symbol_type: SymbolType {
-                        name: "".to_string(),
+                        name: "class".to_string(),
                     },
                     link: Some(create_table(ast, node, table_container, name_prefix)),
                 })
@@ -205,10 +246,10 @@ impl SymbolTableEntry {
 
                 match table_container.get_mut(&*table_name) {
                     None => {
-                        SemanticError::report(
-                            SemanticErrType::Error,
-                            format!("struct {} is undefined", target_struct_name),
-                        );
+                        SemanticError::report_error(&format!(
+                            "struct {} is undefined",
+                            target_struct_name
+                        ));
                     }
                     Some(table) => {
                         for new_entry in new_entry_set {
@@ -217,6 +258,19 @@ impl SymbolTableEntry {
                     }
                 }
                 None
+            }
+            CompositeConcept::FParam => {
+                let param_children = ast.get_children(node);
+                let name = ast
+                    .get_node_value(param_children[0])
+                    .get_atomic_concept()
+                    .get_value();
+                Some(SymbolTableEntry {
+                    name,
+                    kind: SymbolKind::Parameter,
+                    symbol_type: SymbolType::from_node(node, ast),
+                    link: None,
+                })
             }
             _ => None,
         }
@@ -227,19 +281,41 @@ impl Display for SymbolTableEntry {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{}, {:?}, {}, {:?}",
-            self.name, self.kind, self.symbol_type, self.link
+            "{0: <14} | {1: <14} | {2: <14} | {3: <14}",
+            self.name,
+            self.kind,
+            self.symbol_type,
+            match &self.link {
+                None => "None",
+                Some(s) => s,
+            }
         )
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum SymbolKind {
     Variable,
     Function,
     Parameter,
     Inherits,
     Class,
+}
+
+impl Display for SymbolKind {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                SymbolKind::Variable => "Variable",
+                SymbolKind::Function => "Function",
+                SymbolKind::Parameter => "Parameter",
+                SymbolKind::Inherits => "Inherits",
+                SymbolKind::Class => "Class",
+            }
+        )
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

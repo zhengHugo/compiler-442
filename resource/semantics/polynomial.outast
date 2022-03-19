@@ -328,3 +328,85 @@ Prog
 | | | | | | Var
 | | | | | | | Id
 | | | | | | | IndexList
+| FuncDef
+| | Id
+| | FParams
+| | Void
+| | FuncBody
+| | | VarDecl
+| | | | Id
+| | | | Type
+| | | | | Id
+| | | | ArraySizes
+| | | VarDecl
+| | | | Id
+| | | | Type
+| | | | | Id
+| | | | ArraySizes
+| | | VarDecl
+| | | | Id
+| | | | Type
+| | | | | Integer
+| | | | ArraySizes
+| | | Assign
+| | | | Id
+| | | | FuncCall
+| | | | | Dot
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
+| | | | | | Id
+| | | | | AParams
+| | | | | | IntLit
+| | | | | | FloatLit
+| | | Assign
+| | | | Id
+| | | | FuncCall
+| | | | | Dot
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
+| | | | | | Id
+| | | | | AParams
+| | | | | | SignedExpr
+| | | | | | | Sign
+| | | | | | | FloatLit
+| | | | | | FloatLit
+| | | | | | FloatLit
+| | | Assign
+| | | | Id
+| | | | IntLit
+| | | While
+| | | | RelExpr
+| | | | | Var
+| | | | | | Id
+| | | | | | IndexList
+| | | | | RelOp
+| | | | | IntLit
+| | | | StmtBlock
+| | | | | Write
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
+| | | | | Write
+| | | | | | FuncCall
+| | | | | | | Dot
+| | | | | | | | Var
+| | | | | | | | | Id
+| | | | | | | | | IndexList
+| | | | | | | | Id
+| | | | | | | AParams
+| | | | | | | | Var
+| | | | | | | | | Id
+| | | | | | | | | IndexList
+| | | | | Write
+| | | | | | FuncCall
+| | | | | | | Dot
+| | | | | | | | Var
+| | | | | | | | | Id
+| | | | | | | | | IndexList
+| | | | | | | | Id
+| | | | | | | AParams
+| | | | | | | | Var
+| | | | | | | | | Id
+| | | | | | | | | IndexList

@@ -1,0 +1,90 @@
+/* sort the array */
+func bubbleSort(arr: integer[], size: integer) -> void 
+{
+  let n: integer;
+  let i: integer;
+  let j: integer;
+  let temp: integer; 
+  n = size;
+  i = 0;
+  j = 0;
+  temp = 0;
+  while (i < n-1) { 
+    while (j < n-i-1) {
+      if (arr[j] > arr[j+1]) 
+        then {
+          // swap temp and arr[i]
+          temp = arr[j];
+          arr[j] = arr[j+1];
+          arr[j+1] = temp;
+        } else ;
+        j = j+1;
+      };
+    i = i+1;
+  };
+}
+   
+/* print the array */
+func printArray(arr: integer[], size: integer) -> void 
+{
+  let n: integer;
+  let i: integer; 
+  n = size;
+  i = 0; 
+  while (i<n) { 
+    write(arr[i]);
+      i = i+1;
+  };
+} 
+
+// main funtion to test above
+func main() -> void
+{
+  let arr: integer[7]; 
+  arr[0] = 64;
+  arr[1] = 34;
+  arr[2] = 25;
+  arr[3] = 12;
+  arr[4] = 22;
+  arr[5] = 11;
+  arr[6] = 90;
+  printarray(arr, 7); 
+  bubbleSort(arr, 7);
+  printarray(arr, 7); 
+}
+
+/*
+1.   |X| global symbol table
+2.   | | class symbol table
+3.1  | | class data member
+3.2  |X| function's local variable
+4.1  |X| free function
+4.2  | | member function
+6.1  | | undeclared member function definition
+6.2  | | undefined member function declaration
+8.1  | | multiply declared class
+8.2  | | multiply declared free function
+8.3  | | multiply declared identifier in class
+8.4  | | multiply declared identifier in function
+8.5  | | shadowed inherited data member
+9.1  | | Overloaded free function
+9.2  | | Overloaded member function
+9.3  | | Overridden inherited member function
+10.1 | | Type error in expression
+10.2 | | Type error in assignment statement 
+10.3 | | Type error in return statement
+11.1 | | Undeclared local variable
+11.2 | | Undeclared data member
+11.3 | | Undeclared member function
+11.4 | | Undeclared free function
+11.5 | | Undeclared class
+12.1 | | Function call with wrong number of parameters
+12.2 | | Function call with wrong type of parameters
+13.1 | | Use of array with wrong number of dimensions
+13.2 | | Array index is not an integer
+13.3 | | Array parameter using wrong number of dimensions
+14.1 | | Circular class dependency
+15.1 | | "." operator used on non-class type
+*/
+
+

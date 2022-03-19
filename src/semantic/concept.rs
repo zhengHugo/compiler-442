@@ -1,7 +1,5 @@
 use crate::lexical::token::{Token, TokenType, ValidTokenType};
-use crate::semantic::visitor::Visitable;
 use std::fmt::{Display, Formatter};
-use std::ops::Deref;
 
 #[derive(PartialEq)]
 pub enum Concept {
