@@ -1,0 +1,288 @@
+Prog
+| FuncDef
+| | Id
+| | FParams
+| | | FParam
+| | | | Id
+| | | | Type
+| | | | | Integer
+| | | | ArraySizes
+| | | | | EmptyArraySize
+| | | FParam
+| | | | Id
+| | | | Type
+| | | | | Integer
+| | | | ArraySizes
+| | Void
+| | FuncBody
+| | | VarDecl
+| | | | Id
+| | | | Type
+| | | | | Integer
+| | | | ArraySizes
+| | | VarDecl
+| | | | Id
+| | | | Type
+| | | | | Integer
+| | | | ArraySizes
+| | | VarDecl
+| | | | Id
+| | | | Type
+| | | | | Integer
+| | | | ArraySizes
+| | | VarDecl
+| | | | Id
+| | | | Type
+| | | | | Integer
+| | | | ArraySizes
+| | | Assign
+| | | | Id
+| | | | Var
+| | | | | Id
+| | | | | IndexList
+| | | Assign
+| | | | Id
+| | | | IntLit
+| | | Assign
+| | | | Id
+| | | | IntLit
+| | | Assign
+| | | | Id
+| | | | IntLit
+| | | While
+| | | | RelExpr
+| | | | | Var
+| | | | | | Id
+| | | | | | IndexList
+| | | | | RelOp
+| | | | | AddExpr
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
+| | | | | | AddOp
+| | | | | | IntLit
+| | | | StmtBlock
+| | | | | While
+| | | | | | RelExpr
+| | | | | | | Var
+| | | | | | | | Id
+| | | | | | | | IndexList
+| | | | | | | RelOp
+| | | | | | | AddExpr
+| | | | | | | | AddExpr
+| | | | | | | | | Var
+| | | | | | | | | | Id
+| | | | | | | | | | IndexList
+| | | | | | | | | AddOp
+| | | | | | | | | Var
+| | | | | | | | | | Id
+| | | | | | | | | | IndexList
+| | | | | | | | AddOp
+| | | | | | | | IntLit
+| | | | | | StmtBlock
+| | | | | | | IfThenElse
+| | | | | | | | RelExpr
+| | | | | | | | | Var
+| | | | | | | | | | Id
+| | | | | | | | | | IndexList
+| | | | | | | | | | | Var
+| | | | | | | | | | | | Id
+| | | | | | | | | | | | IndexList
+| | | | | | | | | RelOp
+| | | | | | | | | Var
+| | | | | | | | | | Id
+| | | | | | | | | | IndexList
+| | | | | | | | | | | AddExpr
+| | | | | | | | | | | | Var
+| | | | | | | | | | | | | Id
+| | | | | | | | | | | | | IndexList
+| | | | | | | | | | | | AddOp
+| | | | | | | | | | | | IntLit
+| | | | | | | | StmtBlock
+| | | | | | | | | Assign
+| | | | | | | | | | Id
+| | | | | | | | | | Var
+| | | | | | | | | | | Id
+| | | | | | | | | | | IndexList
+| | | | | | | | | | | | Var
+| | | | | | | | | | | | | Id
+| | | | | | | | | | | | | IndexList
+| | | | | | | | | Assign
+| | | | | | | | | | Var
+| | | | | | | | | | | Id
+| | | | | | | | | | | IndexList
+| | | | | | | | | | | | Var
+| | | | | | | | | | | | | Id
+| | | | | | | | | | | | | IndexList
+| | | | | | | | | | Var
+| | | | | | | | | | | Id
+| | | | | | | | | | | IndexList
+| | | | | | | | | | | | AddExpr
+| | | | | | | | | | | | | Var
+| | | | | | | | | | | | | | Id
+| | | | | | | | | | | | | | IndexList
+| | | | | | | | | | | | | AddOp
+| | | | | | | | | | | | | IntLit
+| | | | | | | | | Assign
+| | | | | | | | | | Var
+| | | | | | | | | | | Id
+| | | | | | | | | | | IndexList
+| | | | | | | | | | | | AddExpr
+| | | | | | | | | | | | | Var
+| | | | | | | | | | | | | | Id
+| | | | | | | | | | | | | | IndexList
+| | | | | | | | | | | | | AddOp
+| | | | | | | | | | | | | IntLit
+| | | | | | | | | | Var
+| | | | | | | | | | | Id
+| | | | | | | | | | | IndexList
+| | | | | | | | StmtBlock
+| | | | | | | Assign
+| | | | | | | | Id
+| | | | | | | | AddExpr
+| | | | | | | | | Var
+| | | | | | | | | | Id
+| | | | | | | | | | IndexList
+| | | | | | | | | AddOp
+| | | | | | | | | IntLit
+| | | | | Assign
+| | | | | | Id
+| | | | | | AddExpr
+| | | | | | | Var
+| | | | | | | | Id
+| | | | | | | | IndexList
+| | | | | | | AddOp
+| | | | | | | IntLit
+| FuncDef
+| | Id
+| | FParams
+| | | FParam
+| | | | Id
+| | | | Type
+| | | | | Integer
+| | | | ArraySizes
+| | | | | EmptyArraySize
+| | | FParam
+| | | | Id
+| | | | Type
+| | | | | Integer
+| | | | ArraySizes
+| | Void
+| | FuncBody
+| | | VarDecl
+| | | | Id
+| | | | Type
+| | | | | Integer
+| | | | ArraySizes
+| | | VarDecl
+| | | | Id
+| | | | Type
+| | | | | Integer
+| | | | ArraySizes
+| | | Assign
+| | | | Id
+| | | | Var
+| | | | | Id
+| | | | | IndexList
+| | | Assign
+| | | | Id
+| | | | IntLit
+| | | While
+| | | | RelExpr
+| | | | | Var
+| | | | | | Id
+| | | | | | IndexList
+| | | | | RelOp
+| | | | | Var
+| | | | | | Id
+| | | | | | IndexList
+| | | | StmtBlock
+| | | | | Write
+| | | | | | Var
+| | | | | | | Id
+| | | | | | | IndexList
+| | | | | | | | Var
+| | | | | | | | | Id
+| | | | | | | | | IndexList
+| | | | | Assign
+| | | | | | Id
+| | | | | | AddExpr
+| | | | | | | Var
+| | | | | | | | Id
+| | | | | | | | IndexList
+| | | | | | | AddOp
+| | | | | | | IntLit
+| FuncDef
+| | Id
+| | FParams
+| | Void
+| | FuncBody
+| | | VarDecl
+| | | | Id
+| | | | Type
+| | | | | Integer
+| | | | ArraySizes
+| | | | | IntLit
+| | | Assign
+| | | | Var
+| | | | | Id
+| | | | | IndexList
+| | | | | | IntLit
+| | | | IntLit
+| | | Assign
+| | | | Var
+| | | | | Id
+| | | | | IndexList
+| | | | | | IntLit
+| | | | IntLit
+| | | Assign
+| | | | Var
+| | | | | Id
+| | | | | IndexList
+| | | | | | IntLit
+| | | | IntLit
+| | | Assign
+| | | | Var
+| | | | | Id
+| | | | | IndexList
+| | | | | | IntLit
+| | | | IntLit
+| | | Assign
+| | | | Var
+| | | | | Id
+| | | | | IndexList
+| | | | | | IntLit
+| | | | IntLit
+| | | Assign
+| | | | Var
+| | | | | Id
+| | | | | IndexList
+| | | | | | IntLit
+| | | | IntLit
+| | | Assign
+| | | | Var
+| | | | | Id
+| | | | | IndexList
+| | | | | | IntLit
+| | | | IntLit
+| | | FuncCall
+| | | | Id
+| | | | AParams
+| | | | | Var
+| | | | | | Id
+| | | | | | IndexList
+| | | | | IntLit
+| | | FuncCall
+| | | | Id
+| | | | AParams
+| | | | | Var
+| | | | | | Id
+| | | | | | IndexList
+| | | | | IntLit
+| | | FuncCall
+| | | | Id
+| | | | AParams
+| | | | | Var
+| | | | | | Id
+| | | | | | IndexList
+| | | | | IntLit

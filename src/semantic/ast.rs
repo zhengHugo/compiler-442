@@ -122,6 +122,33 @@ pub fn create_table(
                     ) {
                         None => {}
                         Some(entry) => {
+                            let inherit_entries =
+                                this_table.get_all_entries_by_kind(SymbolKind::Inherits);
+                            let inherit_table_names = inherit_entries
+                                .iter()
+                                .map(|entry| entry.link.as_ref().unwrap())
+                                .collect::<Vec<&String>>();
+                            for inherit_table_name in inherit_table_names {
+                                if search_inherited_class_from_member(
+                                    &entry.name,
+                                    match entry.kind {
+                                        SymbolKind::Function => {
+                                            let func_type = entry.symbol_type.get_name();
+                                            Some(func_type.split(":").last().unwrap().to_string())
+                                        }
+                                        _ => None,
+                                    },
+                                    inherit_table_name,
+                                    table_container,
+                                )
+                                .is_some()
+                                {
+                                    SemanticError::report(
+                                        SemanticErrType::Warning,
+                                        &format!("Overriding member {}", &entry.name),
+                                    );
+                                }
+                            }
                             this_table.insert(entry);
                         }
                     }
@@ -170,13 +197,29 @@ fn refer_type_on_node(
         Concept::AtomicConcept(ac) => match ac.atomic_concept_type {
             AtomicConceptType::Id => {
                 let entries = table.get_all_entries_by_name(&ac.get_value());
-                if entries.is_empty() {
-                    Err(SemanticError::report_error(&format!(
-                        "{} referred is undeclared",
-                        ac.get_value()
-                    )))
-                } else {
+                if !entries.is_empty() {
+                    // id is found in this table
                     Ok(entries[0].symbol_type.get_name())
+                } else {
+                    if scope.eq("global") {
+                        // already searching in the global scope and still not found. Error
+                        return Err(SemanticError::report_error(&format!(
+                            "{} referred is undeclared",
+                            ac.get_value()
+                        )));
+                    } else {
+                        let mut scope_split_vec = scope.split(":").collect::<Vec<&str>>();
+                        if let Some((_, parent_scope)) = scope_split_vec.split_last() {
+                            return refer_type_on_node(
+                                node,
+                                ast,
+                                &parent_scope.join(":"),
+                                table_container,
+                            );
+                        } else {
+                            panic!("Unexpected scope string");
+                        }
+                    }
                 }
             }
             AtomicConceptType::FloatLit => Ok("float".to_string()),
@@ -198,40 +241,41 @@ fn refer_type_on_node(
                 let left_side_type =
                     refer_type_on_node(dot_children[0], ast, scope, table_container)?;
                 let global_table = table_container.get("global").unwrap();
-                match global_table.get_entry_by_name_and_type(&left_side_type, "class") {
-                    // check caller is a defined class
-                    None => Err(SemanticError::report_error(&format!(
+                let entries_of_left_side = global_table.get_all_entries_by_name(&left_side_type);
+                // check caller is a defined class
+                if entries_of_left_side.is_empty() {
+                    return Err(SemanticError::report_error(&format!(
                         "Type of caller of a \".\" operator should be a class. {} is found",
                         &left_side_type
-                    ))),
-                    Some(class_entry) => {
-                        let left_side_table = table_container
-                            .get(&class_entry.link.clone().unwrap())
-                            .unwrap();
-                        let right_side_name = ast
-                            .get_node_value(dot_children[1])
-                            .get_atomic_concept()
-                            .get_value();
+                    )));
+                } else {
+                    let class_entry = &entries_of_left_side[0];
+                    let left_side_table = table_container
+                        .get(&class_entry.link.clone().unwrap())
+                        .unwrap();
+                    let right_side_name = ast
+                        .get_node_value(dot_children[1])
+                        .get_atomic_concept()
+                        .get_value();
 
-                        // check callee is in a table
-                        let target_table_option = search_inherited_class_from_member(
-                            &right_side_name,
-                            None,
-                            &left_side_table.get_table_name(),
-                            table_container,
-                        );
-                        match target_table_option {
-                            None => Err(SemanticError::report_error(&format!(
-                                "{} is not a member of {} or its super classes",
-                                right_side_name, left_side_type
-                            ))),
-                            Some(target_table_name) => {
-                                let entries = table_container
-                                    .get(&target_table_name)
-                                    .unwrap()
-                                    .get_all_entries_by_name(&right_side_name);
-                                return Ok(entries[0].symbol_type.get_name());
-                            }
+                    // check callee is in a table
+                    let target_table_option = search_inherited_class_from_member(
+                        &right_side_name,
+                        None,
+                        &left_side_table.get_table_name(),
+                        table_container,
+                    );
+                    match target_table_option {
+                        None => Err(SemanticError::report_error(&format!(
+                            "{} is not a member of {} or its super classes",
+                            right_side_name, left_side_type
+                        ))),
+                        Some(target_table_name) => {
+                            let entries = table_container
+                                .get(&target_table_name)
+                                .unwrap()
+                                .get_all_entries_by_name(&right_side_name);
+                            return Ok(entries[0].symbol_type.get_name());
                         }
                     }
                 }
@@ -304,8 +348,18 @@ fn refer_type_on_node(
                         .get_value();
                     let dot_caller_type =
                         refer_type_on_node(dot_children[0], ast, scope, table_container)?;
+                    let global_table = table_container.get("global").unwrap();
+                    let entries_by_dot_caller_name =
+                        global_table.get_all_entries_by_name(&dot_caller_type);
+                    if entries_by_dot_caller_name.is_empty() {
+                        return Err(SemanticError::report_error(&format!(
+                            "Type of caller of a \".\" operator should be a class. {} is found",
+                            dot_caller_type
+                        )));
+                    }
+                    let dot_caller_class_entry = &entries_by_dot_caller_name[0];
                     let dot_caller_table = table_container
-                        .get(&format!("global:{dot_caller_type}"))
+                        .get(&dot_caller_class_entry.link.clone().unwrap())
                         .unwrap();
                     let params_type =
                         refer_type_on_node(func_call_children[1], ast, scope, table_container)?;
@@ -317,7 +371,7 @@ fn refer_type_on_node(
                     );
                     match target_table_name_option {
                         None => Err(SemanticError::report_error(&format!(
-                            "function {} of parameter type {} is not found as a member of {}",
+                            "function {} of parameter type ({}) is not found as a member of {}",
                             dot_callee_name, params_type, dot_caller_type
                         ))),
                         Some(target_table_name) => {
@@ -383,12 +437,12 @@ fn refer_type_on_node(
                     refer_type_on_node(rel_expr_children[0], ast, scope, table_container)?;
                 let right_operand_type =
                     refer_type_on_node(rel_expr_children[2], ast, scope, table_container)?;
-                if !left_operand_type.eq("float") || !left_operand_type.eq("integer") {
+                if !left_operand_type.eq("float") && !left_operand_type.eq("integer") {
                     return Err(SemanticError::report_error(&format!(
                         "real operator applied on {left_operand_type}, which is not a number"
                     )));
                 }
-                if !right_operand_type.eq("float") || !right_operand_type.eq("integer") {
+                if !right_operand_type.eq("float") && !right_operand_type.eq("integer") {
                     return Err(SemanticError::report_error(&format!(
                         "real operator applied on {right_operand_type}, which is not a number"
                     )));
@@ -413,14 +467,14 @@ fn refer_type_on_node(
                     refer_type_on_node(add_expr_children[2], ast, scope, table_container)?;
                 match operator.as_str() {
                     "+" | "-" => {
-                        if !left_operand_type.eq("float") || !left_operand_type.eq("integer") {
+                        if !left_operand_type.eq("float") && !left_operand_type.eq("integer") {
                             return Err(SemanticError::report_error(&format!(
-                                "real operator applied on {left_operand_type}, which is not a number"
+                                "add operator applied on {left_operand_type}, which is not a number"
                             )));
                         }
-                        if !right_operand_type.eq("float") || !right_operand_type.eq("integer") {
+                        if !right_operand_type.eq("float") && !right_operand_type.eq("integer") {
                             return Err(SemanticError::report_error(&format!(
-                                "real operator applied on {right_operand_type}, which is not a number"
+                                "add operator applied on {right_operand_type}, which is not a number"
                             )));
                         }
                         // if either one operand is float, return float
@@ -463,14 +517,14 @@ fn refer_type_on_node(
                     refer_type_on_node(mult_expr_children[2], ast, scope, table_container)?;
                 match operator.as_str() {
                     "*" | "/" => {
-                        if !left_operand_type.eq("float") || !left_operand_type.eq("integer") {
+                        if !left_operand_type.eq("float") && !left_operand_type.eq("integer") {
                             return Err(SemanticError::report_error(&format!(
-                                "real operator applied on {left_operand_type}, which is not a number"
+                                "mult operator applied on {left_operand_type}, which is not a number"
                             )));
                         }
-                        if !right_operand_type.eq("float") || !right_operand_type.eq("integer") {
+                        if !right_operand_type.eq("float") && !right_operand_type.eq("integer") {
                             return Err(SemanticError::report_error(&format!(
-                                "real operator applied on {right_operand_type}, which is not a number"
+                                "mult operator applied on {right_operand_type}, which is not a number"
                             )));
                         }
                         // if either one operand is float, return float
@@ -516,7 +570,7 @@ fn refer_type_on_node(
             CompositeConcept::SignedExpr => {
                 let signed_expr_children = ast.get_children(node);
                 let signed_expr_type =
-                    refer_type_on_node(signed_expr_children[0], ast, scope, table_container)?;
+                    refer_type_on_node(signed_expr_children[1], ast, scope, table_container)?;
                 if signed_expr_type.eq("integer") || signed_expr_type.eq("float") {
                     Ok(signed_expr_type)
                 } else {
@@ -579,7 +633,11 @@ fn refer_type_on_node(
                     result.push_str(&node_type);
                     result.push_str(",");
                 }
-                Ok(result[0..result.len() - 1].to_string())
+                if result.len() > 0 {
+                    return Ok(result[0..result.len() - 1].to_string());
+                } else {
+                    return Ok("".to_string());
+                }
             }
             CompositeConcept::FuncDef => {
                 // get the table belong to this funcDef
@@ -612,6 +670,9 @@ fn refer_type_on_node(
                         &this_table.get_table_name(),
                         &defined_return_type
                     )))
+                } else if body_return_type.eq("integer") && defined_return_type.eq("float") {
+                    // auto-cast integer to float
+                    Ok("float".to_string())
                 } else if !body_return_type.eq("") && !body_return_type.eq(&defined_return_type) {
                     Err(SemanticError::report_error(&format!(
                         "function {} should return {} but {} is returned",
@@ -719,18 +780,20 @@ fn refer_type_on_node(
 }
 
 fn check_func_def(table_container: &HashMap<String, SymbolTable>) {
+    // check main function is defined
+    let global_table = table_container.get("global").unwrap();
+    if global_table.get_all_entries_by_name("main").is_empty() {
+        SemanticError::report_error(&format!("main function is not defined"));
+    }
     // for each table, each function should have link
     for (table_name, table) in table_container {
         for entry in table.get_all_entries() {
             if matches!(entry.kind, SymbolKind::Function) {
                 if entry.link.is_none() {
-                    SemanticError::report(
-                        SemanticErrType::Error,
-                        &format!(
-                            "function {}:{} is declared but not defined",
-                            table_name, entry.name
-                        ),
-                    );
+                    SemanticError::report_error(&format!(
+                        "function {}:{} is declared but not defined",
+                        table_name, entry.name
+                    ));
                 }
             }
         }

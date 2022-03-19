@@ -839,8 +839,8 @@ AParams -> E Expr ReptAParams1 Z
 Expr -> ArithExpr Expr2
 ArithExpr -> Term RightRecArithExpr
 Term -> Factor RightRecTerm
-Factor -> ValidTokenType(Integer) A
-match Integer
+Factor -> ValidTokenType(Float) A
+match Float
 RightRecTerm -> EPSILON
 RightRecArithExpr -> EPSILON
 Expr2 -> EPSILON

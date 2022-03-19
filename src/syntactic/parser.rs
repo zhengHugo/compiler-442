@@ -1,5 +1,5 @@
 use crate::lexical::token::{Token, TokenType, ValidTokenType};
-use crate::semantic::concept::{CompositeConcept, Concept};
+use crate::semantic::concept::{AtomicConcept, AtomicConceptType, CompositeConcept, Concept};
 use crate::syntactic::derivation::Derivation;
 use crate::syntactic::symbol::{ActionSymbol, NonTerminal, Symbol, Terminal};
 use crate::syntactic::tree::{NodeId, Tree};
@@ -566,6 +566,14 @@ impl Parser {
                 // pop epsilon
                 semantic_stack.pop();
                 semantic_stack.push(prog_id);
+            }
+            ActionSymbol::B9 => { //emptyArraySize
+                let concept = Concept::AtomicConcept(AtomicConcept {
+                    atomic_concept_type: AtomicConceptType::EmptyArraySize,
+                    value: "".to_string()
+                });
+                let concept_node_id = ast.insert_node(None, concept);
+                semantic_stack.push(concept_node_id);
             }
         }
     }

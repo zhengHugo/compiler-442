@@ -290,6 +290,7 @@ pub enum ActionSymbol {
     B6,
     B7,
     B8,
+    B9,
 }
 
 impl FromStr for ActionSymbol {
@@ -340,6 +341,7 @@ impl FromStr for ActionSymbol {
             "B6" => Ok(ActionSymbol::B6),
             "B7" => Ok(ActionSymbol::B7),
             "B8" => Ok(ActionSymbol::B8),
+            "B9" => Ok(ActionSymbol::B9),
             _ => Err(()),
         }
     }

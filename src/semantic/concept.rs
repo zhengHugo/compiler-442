@@ -134,7 +134,7 @@ impl Display for Concept {
 #[derive(PartialEq, Clone)]
 pub struct AtomicConcept {
     pub atomic_concept_type: AtomicConceptType,
-    value: String,
+    pub value: String,
 }
 
 impl AtomicConcept {
@@ -163,6 +163,7 @@ pub enum AtomicConceptType {
     Sign,
     Visibility,
     Epsilon,
+    EmptyArraySize,
 }
 
 #[derive(PartialEq, Debug, Clone)]

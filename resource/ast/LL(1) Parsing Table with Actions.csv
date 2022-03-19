@@ -5,7 +5,7 @@ APARAMS,,,,APARAMS → E &epsilon Z,APARAMS → E EXPR REPTAPARAMS1 Z,APARAMS �
 APARAMSTAIL,,,,,,,,,,,,,,,,,,,,,,,,,,APARAMSTAIL → comma EXPR,,,,,,,,,,,,,,,,,,,,
 ARITHEXPR,,,,,ARITHEXPR → TERM RIGHTRECARITHEXPR,ARITHEXPR → TERM RIGHTRECARITHEXPR,,,,,,,,,,,,,,,,,ARITHEXPR → TERM RIGHTRECARITHEXPR,ARITHEXPR → TERM RIGHTRECARITHEXPR,,,,,,,,,,,,,,,,,,ARITHEXPR → TERM RIGHTRECARITHEXPR,ARITHEXPR → TERM RIGHTRECARITHEXPR,ARITHEXPR → TERM RIGHTRECARITHEXPR,,
 ARRAYSIZE,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ARRAYSIZE → lsqbr ARRAYSIZE2,,,,,,,,
-ARRAYSIZE2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ARRAYSIZE2 → rsqbr,,,,,,,ARRAYSIZE2 → intlit A rsqbr,,
+ARRAYSIZE2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ARRAYSIZE2 → rsqbr B9,,,,,,,ARRAYSIZE2 → intlit A rsqbr,,
 ASSIGNOP,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ASSIGNOP → equal,
 EXPR,,,,,EXPR → ARITHEXPR EXPR2,EXPR → ARITHEXPR EXPR2,,,,,,,,,,,,,,,,,EXPR → ARITHEXPR EXPR2,EXPR → ARITHEXPR EXPR2,,,,,,,,,,,,,,,,,,EXPR → ARITHEXPR EXPR2,EXPR → ARITHEXPR EXPR2,EXPR → ARITHEXPR EXPR2,,
 EXPR2,,,,EXPR2 → &epsilon,,,,EXPR2 → &epsilon,,,,,,,,,,,,,,,,,,EXPR2 → &epsilon,EXPR2 → RELOP ARITHEXPR L,EXPR2 → RELOP ARITHEXPR L,EXPR2 → RELOP ARITHEXPR L,EXPR2 → RELOP ARITHEXPR L,EXPR2 → RELOP ARITHEXPR L,EXPR2 → RELOP ARITHEXPR L,,,,,,,,,,,,,,

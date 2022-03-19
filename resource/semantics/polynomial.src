@@ -69,10 +69,10 @@ func main() -> void
   let f1: LINEAR;
   let f2: QUADRATIC;
   let counter: integer;
-  f1 = f1.build(2, 3.5);
+  f1 = f1.build(2.0, 3.5);
   f2 = f2.build(-2.0, 1.0, 0.0);
   counter = 1;
-	
+
   while(counter <= 10)
   {
     write(counter);

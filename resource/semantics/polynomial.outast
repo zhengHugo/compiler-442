@@ -357,7 +357,7 @@ Prog
 | | | | | | | IndexList
 | | | | | | Id
 | | | | | AParams
-| | | | | | IntLit
+| | | | | | FloatLit
 | | | | | | FloatLit
 | | | Assign
 | | | | Id

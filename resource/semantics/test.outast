@@ -1,0 +1,65 @@
+Prog
+| StructDecl
+| | Id
+| | InheritsList
+| | StructMemberDeclList
+| | | StructMemberDecl
+| | | | Visibility
+| | | | FuncDecl
+| | | | | Id
+| | | | | FParams
+| | | | | | FParam
+| | | | | | | Id
+| | | | | | | Type
+| | | | | | | | Float
+| | | | | | | ArraySizes
+| | | | | Type
+| | | | | | Float
+| StructDecl
+| | Id
+| | InheritsList
+| | | Id
+| | StructMemberDeclList
+| | | StructMemberDecl
+| | | | Visibility
+| | | | VarDecl
+| | | | | Id
+| | | | | Type
+| | | | | | Float
+| | | | | ArraySizes
+| | | StructMemberDecl
+| | | | Visibility
+| | | | VarDecl
+| | | | | Id
+| | | | | Type
+| | | | | | Float
+| | | | | ArraySizes
+| | | StructMemberDecl
+| | | | Visibility
+| | | | FuncDecl
+| | | | | Id
+| | | | | FParams
+| | | | | | FParam
+| | | | | | | Id
+| | | | | | | Type
+| | | | | | | | Float
+| | | | | | | ArraySizes
+| | | | | | FParam
+| | | | | | | Id
+| | | | | | | Type
+| | | | | | | | Float
+| | | | | | | ArraySizes
+| | | | | Type
+| | | | | | Id
+| | | StructMemberDecl
+| | | | Visibility
+| | | | FuncDecl
+| | | | | Id
+| | | | | FParams
+| | | | | | FParam
+| | | | | | | Id
+| | | | | | | Type
+| | | | | | | | Float
+| | | | | | | ArraySizes
+| | | | | Type
+| | | | | | Float

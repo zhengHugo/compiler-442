@@ -83,12 +83,16 @@ impl SymbolTable {
                     }
                     self.entries.insert(key, entry)
                 } else {
-                    // no existing entry and new entry has link: impl without decl
-                    SemanticError::report_error(&format!(
-                        "definition provided for undeclared function {}. ",
-                        &entry.name
-                    ));
-                    None
+                    if self.name.eq("global") {
+                        return self.entries.insert(key, entry);
+                    } else {
+                        // no existing entry and new entry has link: impl without decl
+                        SemanticError::report_error(&format!(
+                            "definition provided for undeclared function {}. ",
+                            &entry.name
+                        ));
+                        return None;
+                    }
                 }
             }
         } else {
@@ -190,11 +194,9 @@ impl SymbolTableEntry {
                     .get_value();
 
                 Some(SymbolTableEntry {
-                    name,
+                    name: name.clone(),
                     kind: SymbolKind::Class,
-                    symbol_type: SymbolType {
-                        name: "class".to_string(),
-                    },
+                    symbol_type: SymbolType { name },
                     link: Some(create_table(ast, node, table_container, name_prefix)),
                 })
             }
@@ -328,20 +330,21 @@ impl SymbolType {
         let concept = ast.get_node_value(node);
         let name = match concept {
             Concept::AtomicConcept(ac) => match ac.atomic_concept_type {
-                AtomicConceptType::Id
-                | AtomicConceptType::FloatLit
-                | AtomicConceptType::Integer
-                | AtomicConceptType::Void
-                | AtomicConceptType::RelOp
-                | AtomicConceptType::MultiOp
-                | AtomicConceptType::AddOp
-                | AtomicConceptType::Sign
+                AtomicConceptType::Float | AtomicConceptType::FloatLit => "float".to_string(),
+                AtomicConceptType::Integer
                 | AtomicConceptType::IntLit
-                | AtomicConceptType::Float => ac.get_value(),
+                | AtomicConceptType::EmptyArraySize => "integer".to_string(),
+                AtomicConceptType::Id => ac.get_value(),
+                AtomicConceptType::Void => "".to_string(),
                 _ => panic!("Error in getting atomic concept symbol type"),
+                // AtomicConceptType::Visibility => {}
+                // AtomicConceptType::Epsilon => {}
+                // | AtomicConceptType::RelOp
+                // | AtomicConceptType::MultiOp
+                // | AtomicConceptType::AddOp
+                // | AtomicConceptType::Sign
             },
             Concept::CompositeConcept(cc) => match cc {
-                // CompositeConcept::IndexList => {}
                 CompositeConcept::ArraySizes => {
                     let array_sizes_elements = ast.get_children(node);
                     array_sizes_elements
@@ -351,13 +354,6 @@ impl SymbolType {
                         .collect::<Vec<String>>()
                         .join("")
                 }
-                // CompositeConcept::Var => {}
-                // CompositeConcept::RelExpr => {}
-                // CompositeConcept::AddExpr => {}
-                // CompositeConcept::MultExpr => {}
-                // CompositeConcept::NotExpr => {}
-                // CompositeConcept::SignedExpr => {}
-                // CompositeConcept::Return => {}
                 CompositeConcept::FParam => {
                     let f_param_elements = ast.get_children(node);
                     // get second node type text: type
@@ -375,13 +371,7 @@ impl SymbolType {
                 }
                 CompositeConcept::Type => {
                     let type_children = ast.get_children(node);
-                    let atomic_concept = ast.get_node_value(type_children[0]).get_atomic_concept();
-                    match atomic_concept.atomic_concept_type {
-                        AtomicConceptType::Id => atomic_concept.get_value(),
-                        AtomicConceptType::Float => "float".to_string(),
-                        AtomicConceptType::Integer => "integer".to_string(),
-                        _ => panic!("Error in getting symbol type from Type"),
-                    }
+                    SymbolType::from_node(type_children[0], ast).name
                 }
                 CompositeConcept::VarDecl => {
                     let var_decl_elements = ast.get_children(node);
@@ -396,8 +386,6 @@ impl SymbolType {
                     format!("{}:{}", return_type.name, f_params.name)
                 }
                 CompositeConcept::ImplDef => "".to_string(),
-                // CompositeConcept::StructDecl => {}
-                // CompositeConcept::StructMemberDecl => {}
                 cc => panic!("Unhandled cc: {}", cc),
             },
         };
