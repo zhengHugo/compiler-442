@@ -25,27 +25,6 @@ pub fn create_table(
     match concept {
         Concept::AtomicConcept(_) => "".to_string(),
         Concept::CompositeConcept(cc) => match cc {
-            // CompositeConcept::Dot => {}
-            // CompositeConcept::IndexList => {}
-            // CompositeConcept::Var => {}
-            // CompositeConcept::Assign => {}
-            // CompositeConcept::FuncCall => {}
-            // CompositeConcept::RelExpr => {}
-            // CompositeConcept::AddExpr => {}
-            // CompositeConcept::MultExpr => {}
-            // CompositeConcept::NotExpr => {}
-            // CompositeConcept::SignedExpr => {}
-            // CompositeConcept::IfThenElse => {}
-            // CompositeConcept::Read => {}
-            // CompositeConcept::Return => {}
-            // CompositeConcept::While => {}
-            // CompositeConcept::StmtBlock => {}
-            // CompositeConcept::Write => {}
-            // CompositeConcept::AParams => {}
-            // CompositeConcept::ArraySizes => {}
-            // CompositeConcept::FParam => {}
-            // CompositeConcept::Type => {}
-            // CompositeConcept::FParams => {}
             CompositeConcept::FuncDef => {
                 let func_def_children = ast.get_children(node);
                 let func_name = ast
@@ -80,11 +59,6 @@ pub fn create_table(
                 table_container.insert(table_name.clone(), this_table);
                 table_name
             }
-            // CompositeConcept::VarDecl => {}
-            // CompositeConcept::FuncBody => {}
-            // CompositeConcept::FuncDecl => {}
-            // CompositeConcept::FuncDefList => {}
-            //CompositeConcept::ImplDef => {}
             CompositeConcept::StructDecl => {
                 let struct_decl_children = ast.get_children(node);
                 let struct_name = ast
@@ -97,18 +71,26 @@ pub fn create_table(
                 // inherits as entries
                 let inherit_nodes = ast.get_children(struct_decl_children[1]);
                 for inherit_node in inherit_nodes {
-                    this_table.insert(SymbolTableEntry {
-                        name: "".to_string(),
-                        kind: SymbolKind::Inherits,
-                        symbol_type: SymbolType::from_node(inherit_node, ast),
-                        link: Some(format!(
-                            "{}:{}",
-                            "global",
-                            ast.get_node_value(inherit_node)
-                                .get_atomic_concept()
-                                .get_value()
-                        )),
-                    });
+                    let inherited_table_name = format!(
+                        "{}:{}",
+                        "global",
+                        ast.get_node_value(inherit_node)
+                            .get_atomic_concept()
+                            .get_value()
+                    );
+                    if table_container.contains_key(&inherited_table_name) {
+                        this_table.insert(SymbolTableEntry {
+                            name: "".to_string(),
+                            kind: SymbolKind::Inherits,
+                            symbol_type: SymbolType::from_node(inherit_node, ast),
+                            link: Some(inherited_table_name.clone()),
+                        });
+                    } else {
+                        SemanticError::report_error(&format!(
+                            "inherited class {} doesn't exist",
+                            inherited_table_name
+                        ));
+                    }
                 }
 
                 // members
@@ -181,8 +163,6 @@ pub fn create_table(
         },
     }
 }
-
-fn check_semantics(root: NodeId, ast: &AbstractSyntaxTree) {}
 
 fn refer_type_on_node(
     node: NodeId,

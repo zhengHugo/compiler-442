@@ -1,0 +1,42 @@
+=========================================================
+global:bubbleSort
+---------------------------------------------------------
+name           | kind           | type                 | link          
+---------------------------------------------------------
+temp           | Variable       | integer              | None          
+i              | Variable       | integer              | None          
+size           | Parameter      | integer              | None          
+n              | Variable       | integer              | None          
+j              | Variable       | integer              | None          
+arr            | Parameter      | integer[integer]     | None          
+=========================================================
+
+=========================================================
+global:main
+---------------------------------------------------------
+name           | kind           | type                 | link          
+---------------------------------------------------------
+arr            | Variable       | integer[integer]     | None          
+=========================================================
+
+=========================================================
+global:printArray
+---------------------------------------------------------
+name           | kind           | type                 | link          
+---------------------------------------------------------
+n              | Variable       | integer              | None          
+i              | Variable       | integer              | None          
+size           | Parameter      | integer              | None          
+arr            | Parameter      | integer[integer]     | None          
+=========================================================
+
+=========================================================
+global
+---------------------------------------------------------
+name           | kind           | type                 | link          
+---------------------------------------------------------
+printArray     | Function       | :integer[integer],integer | global:printArray
+main           | Function       | :                    | global:main   
+bubbleSort     | Function       | :integer[integer],integer | global:bubbleSort
+=========================================================
+

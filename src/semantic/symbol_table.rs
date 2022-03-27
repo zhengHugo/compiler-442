@@ -83,16 +83,16 @@ impl SymbolTable {
                     }
                     self.entries.insert(key, entry)
                 } else {
-                    if self.name.eq("global") {
-                        return self.entries.insert(key, entry);
+                    return if self.name.eq("global") {
+                        self.entries.insert(key, entry)
                     } else {
                         // no existing entry and new entry has link: impl without decl
                         SemanticError::report_error(&format!(
                             "definition provided for undeclared function {}. ",
                             &entry.name
                         ));
-                        return None;
-                    }
+                        None
+                    };
                 }
             }
         } else {
@@ -122,7 +122,7 @@ impl Display for SymbolTable {
         );
         write!(
             f,
-            "{0: <14} | {1: <14} | {2: <14} | {3: <14}\n",
+            "{0: <14} | {1: <14} | {2: <20} | {3: <14}\n",
             "name", "kind", "type", "link"
         );
         write!(
@@ -283,10 +283,10 @@ impl Display for SymbolTableEntry {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{0: <14} | {1: <14} | {2: <14} | {3: <14}",
+            "{0: <14} | {1: <14} | {2: <20} | {3: <14}",
             self.name,
-            self.kind,
-            self.symbol_type,
+            format!("{}", self.kind),
+            format!("{}", self.symbol_type),
             match &self.link {
                 None => "None",
                 Some(s) => s,

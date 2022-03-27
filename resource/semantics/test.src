@@ -1,10 +1,4 @@
-struct POLYNOMIAL {
-	public func evaluate(x: float) -> float;
-};
-
-struct LINEAR inherits POLYNOMIAL {
-	private let a: float;
-	private let b: float;
-	public  func build(A: float, B: float) -> LINEAR;
-	public  func evaluate(x: float) -> float;
-};
+func main() -> void  // comment
+{
+    let a: integer;
+}

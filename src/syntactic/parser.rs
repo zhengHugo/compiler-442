@@ -28,7 +28,7 @@ impl Parser {
     }
     pub fn parse(
         &mut self,
-        tokens: Vec<Token>,
+        raw_tokens: Vec<Token>,
     ) -> Result<(Tree<SymbolOrToken>, Tree<Concept>), SyntaxError> {
         // debug only
         let mut error_file = File::create("resource/syntax/outsyntaxerrors").unwrap();
@@ -48,20 +48,22 @@ impl Parser {
         );
         // helper function to handle a derivation hit in the table
         parsing_stack.push(start_node_id);
+        let tokens = raw_tokens
+            .iter()
+            .filter(|token| {
+                !matches!(
+                    token.token_type,
+                    TokenType::ValidTokenType(ValidTokenType::BlockCmt)
+                ) && !matches!(
+                    token.token_type,
+                    TokenType::ValidTokenType(ValidTokenType::InlineCmt)
+                )
+            })
+            .cloned()
+            .collect::<Vec<Token>>();
+
         while !parsing_stack.is_empty() {
             // ignore comments
-            if token_index < tokens.len()
-                && (matches!(
-                    tokens[token_index].token_type,
-                    TokenType::ValidTokenType(ValidTokenType::BlockCmt)
-                ) || matches!(
-                    tokens[token_index].token_type,
-                    TokenType::ValidTokenType(ValidTokenType::InlineCmt)
-                ))
-            {
-                token_index += 1;
-                continue;
-            }
 
             match parsing_tree.get_node_value(*parsing_stack.last().unwrap()) {
                 SymbolOrToken::Symbol(symbol) => {
@@ -193,6 +195,7 @@ impl Parser {
         derivation: &Derivation,
         parsing_tree: &mut Tree<SymbolOrToken>,
     ) {
+        println!("{}", derivation);
         for symbol in derivation.to.iter().rev() {
             // insert node and push into stack
             match symbol {

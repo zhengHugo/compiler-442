@@ -1,5 +1,7 @@
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
+use std::fs::File;
+use std::io::Write;
 
 pub struct SemanticError {
     error_type: SemanticErrType,
@@ -15,6 +17,8 @@ impl SemanticError {
             error_type,
             message: message.to_string(),
         };
+        let mut out_errors = File::create("resource/semantics/outsemanticerrors").unwrap();
+        out_errors.write_all(format!("{}\n", e).as_bytes());
         println!("{}", e);
         e
     }
