@@ -31,6 +31,10 @@ impl SymbolTable {
         self.entries.get(entry_name).cloned()
     }
 
+    pub fn get_mut_entry_by_name(&mut self, entry_name: &str) -> Option<&mut SymbolTableEntry> {
+        self.entries.get_mut(entry_name)
+    }
+
     pub fn get_all_entries_by_kind(&self, symbol_kind: SymbolKind) -> Vec<SymbolTableEntry> {
         self.entries
             .values()
@@ -94,6 +98,8 @@ pub struct SymbolTableEntry {
     pub kind: SymbolKind,
     pub symbol_type: SymbolType,
     pub link: Option<String>,
+    pub size: u32,
+    pub offset: u32,
 }
 
 impl SymbolTableEntry {
@@ -118,6 +124,9 @@ impl SymbolTableEntry {
                     kind: SymbolKind::Function,
                     symbol_type: SymbolType::from_node(node, ast), // fParams type
                     link: Some(ast.create_table(node, table_container, name_prefix)), // funcDef table
+                    // TODO: Function definition size and offset
+                    size: 0,
+                    offset: 0,
                 })
             }
             CompositeConcept::FuncDecl => {
@@ -132,6 +141,9 @@ impl SymbolTableEntry {
                     kind: SymbolKind::Function,
                     symbol_type: SymbolType::from_node(node, ast),
                     link: None,
+                    // TODO: Function declaration size and offset
+                    size: 0,
+                    offset: 0,
                 })
             }
             CompositeConcept::StructDecl => {
@@ -144,8 +156,11 @@ impl SymbolTableEntry {
                 Some(SymbolTableEntry {
                     name: name.clone(),
                     kind: SymbolKind::Class,
-                    symbol_type: SymbolType { name },
+                    symbol_type: SymbolType { value: name },
                     link: Some(ast.create_table(node, table_container, name_prefix)),
+                    // TODO: Struct declaration size and offset
+                    size: 0,
+                    offset: 0,
                 })
             }
             CompositeConcept::VarDecl => {
@@ -154,11 +169,16 @@ impl SymbolTableEntry {
                     .get_node_value(var_decl_elements[0])
                     .get_atomic_concept()
                     .get_value();
+
+                let var_type = SymbolType::from_node(node, ast).get_type_value();
+
                 Some(SymbolTableEntry {
                     name,
                     kind: SymbolKind::Variable,
                     symbol_type: SymbolType::from_node(node, ast),
                     link: None,
+                    size: SymbolTableEntry::get_var_size(node, ast),
+                    offset: 0,
                 })
             }
             CompositeConcept::StructMemberDecl => {
@@ -220,9 +240,29 @@ impl SymbolTableEntry {
                     kind: SymbolKind::Parameter,
                     symbol_type: SymbolType::from_node(node, ast),
                     link: None,
+                    // TODO: function parameter size and offset
+                    size: 0,
+                    offset: 0,
                 })
             }
             _ => None,
+        }
+    }
+
+    fn get_var_size(var_decl_node: NodeId, ast: &AbstractSyntaxTree) -> u32 {
+        let var_decl_children = ast.get_children(var_decl_node);
+        let var_type = SymbolType::from_node(var_decl_node, ast).get_type_value();
+        if var_type.contains("[") {
+            // TODO: var is an array size
+            0
+        } else {
+            // var is simple type
+            match var_type.as_str() {
+                "integer" | "float" => 4,
+                _ => {
+                    todo!("class size")
+                }
+            }
         }
     }
 }
@@ -270,14 +310,14 @@ impl Display for SymbolKind {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SymbolType {
-    name: String,
+    value: String,
 }
 
 impl SymbolType {
     pub fn from_node(node: NodeId, ast: &AbstractSyntaxTree) -> Self {
         let concept = ast.get_node_value(node);
         let name = match concept {
-            Concept::AtomicConcept(ac) => match ac.atomic_concept_type {
+            Concept::AtomicConcept(ac) => match ac.get_atomic_concept_type() {
                 AtomicConceptType::Float | AtomicConceptType::FloatLit => "float".to_string(),
                 AtomicConceptType::Integer
                 | AtomicConceptType::IntLit
@@ -297,7 +337,11 @@ impl SymbolType {
                     let array_sizes_elements = ast.get_children(node);
                     array_sizes_elements
                         .iter()
-                        .map(|x| SymbolType::from_node(*x, ast).name)
+                        .map(|x| {
+                            ast.get_node_value(x.clone())
+                                .get_atomic_concept()
+                                .get_value()
+                        })
                         .map(|x| format!("[{}]", x))
                         .collect::<Vec<String>>()
                         .join("")
@@ -307,55 +351,61 @@ impl SymbolType {
                     // get second node type text: type
                     let type_symbol_type = SymbolType::from_node(f_param_elements[1], ast);
                     let array_sizes_symbol_type = SymbolType::from_node(f_param_elements[2], ast);
-                    format!("{}{}", type_symbol_type.name, array_sizes_symbol_type.name)
+                    format!(
+                        "{}{}",
+                        type_symbol_type.value, array_sizes_symbol_type.value
+                    )
                 }
                 CompositeConcept::FParams => {
                     let f_params_elements = ast.get_children(node);
                     f_params_elements
                         .iter()
-                        .map(|x| SymbolType::from_node(*x, ast).name)
+                        .map(|x| SymbolType::from_node(*x, ast).value)
                         .collect::<Vec<String>>()
                         .join(",")
                 }
                 CompositeConcept::Type => {
                     let type_children = ast.get_children(node);
-                    SymbolType::from_node(type_children[0], ast).name
+                    SymbolType::from_node(type_children[0], ast).value
                 }
                 CompositeConcept::VarDecl => {
                     let var_decl_elements = ast.get_children(node);
                     let type_symbol_type = SymbolType::from_node(var_decl_elements[1], ast);
                     let array_sizes_symbol_type = SymbolType::from_node(var_decl_elements[2], ast);
-                    format!("{}{}", type_symbol_type.name, array_sizes_symbol_type.name)
+                    format!(
+                        "{}{}",
+                        type_symbol_type.value, array_sizes_symbol_type.value
+                    )
                 }
                 CompositeConcept::FuncDecl | CompositeConcept::FuncDef => {
                     let func_def_elements = ast.get_children(node);
                     let f_params = SymbolType::from_node(func_def_elements[1], ast);
                     let return_type = SymbolType::from_node(func_def_elements[2], ast);
-                    format!("{}:{}", return_type.name, f_params.name)
+                    format!("{}:{}", return_type.value, f_params.value)
                 }
                 CompositeConcept::ImplDef => "".to_string(),
                 cc => panic!("Unhandled cc: {}", cc),
             },
         };
-        Self { name }
+        Self { value: name }
     }
 
-    pub fn get_name(&self) -> String {
-        self.name.clone()
+    pub fn get_type_value(&self) -> String {
+        self.value.clone()
     }
 
     fn is_f_params_same(&self, other: &SymbolType) -> bool {
-        if !self.name.contains(":") || !other.name.contains(":") {
+        if !self.value.contains(":") || !other.value.contains(":") {
             panic!("Not function type")
         }
-        let self_param_split = self.name.split(":").collect::<Vec<&str>>();
-        let other_param_split = other.name.split(":").collect::<Vec<&str>>();
+        let self_param_split = self.value.split(":").collect::<Vec<&str>>();
+        let other_param_split = other.value.split(":").collect::<Vec<&str>>();
         self_param_split[1].eq(other_param_split[1])
     }
 }
 
 impl Display for SymbolType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.name)
+        write!(f, "{}", self.value)
     }
 }

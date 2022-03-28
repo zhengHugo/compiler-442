@@ -571,10 +571,9 @@ impl Parser {
                 semantic_stack.push(prog_id);
             }
             ActionSymbol::B9 => { //emptyArraySize
-                let concept = Concept::AtomicConcept(AtomicConcept {
-                    atomic_concept_type: AtomicConceptType::EmptyArraySize,
-                    value: "".to_string()
-                });
+                let concept = Concept::AtomicConcept(AtomicConcept::new(
+                    AtomicConceptType::EmptyArraySize,
+                    "".to_string()));
                 let concept_node_id = ast.insert_node(None, concept);
                 semantic_stack.push(concept_node_id);
             }

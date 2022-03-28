@@ -1,2 +1,2 @@
 mod register;
-mod translation;
+pub mod translation;

@@ -190,6 +190,9 @@ impl AbstractSyntaxTree {
                                 kind: SymbolKind::Inherits,
                                 symbol_type: SymbolType::from_node(inherit_node, self),
                                 link: Some(inherited_table_name.clone()),
+                                // TODO: inherit size and offset (just confirm)
+                                size: 0,
+                                offset: 0,
                             });
                         } else {
                             SemanticError::report_error(&format!(
@@ -273,11 +276,11 @@ impl AbstractSyntaxTree {
         let table = table_container.get(scope).unwrap();
 
         match concept {
-            Concept::AtomicConcept(ac) => match ac.atomic_concept_type {
+            Concept::AtomicConcept(ac) => match ac.get_atomic_concept_type() {
                 AtomicConceptType::Id => {
                     let entry_option = table.get_entry_by_name(&ac.get_value());
                     match entry_option {
-                        Some(entry) => Ok(entry.symbol_type.get_name()),
+                        Some(entry) => Ok(entry.symbol_type.get_type_value()),
                         None => {
                             if scope.eq("global") {
                                 // already searching in the global scope and still not found. Error
@@ -286,7 +289,7 @@ impl AbstractSyntaxTree {
                                     ac.get_value()
                                 )));
                             } else {
-                                let mut scope_split_vec = scope.split(":").collect::<Vec<&str>>();
+                                let scope_split_vec = scope.split(":").collect::<Vec<&str>>();
                                 if let Some((_, parent_scope)) = scope_split_vec.split_last() {
                                     return self.refer_type_on_node(
                                         node,
@@ -351,7 +354,7 @@ impl AbstractSyntaxTree {
                                     .get_entry_by_name(&right_side_name)
                                     .unwrap()
                                     .symbol_type
-                                    .get_name()),
+                                    .get_type_value()),
                             }
                         }
                     }
@@ -792,6 +795,8 @@ impl AbstractSyntaxTree {
             },
         }
     }
+
+    pub fn translate_func_call(&self, children: &Vec<NodeId>) {}
 }
 
 impl Display for AbstractSyntaxTree {

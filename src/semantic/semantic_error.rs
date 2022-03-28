@@ -24,12 +24,6 @@ impl SemanticError {
     }
 }
 
-impl Debug for SemanticError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-
 impl Display for SemanticError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -41,6 +35,12 @@ impl Display for SemanticError {
             },
             self.message
         )
+    }
+}
+
+impl Debug for SemanticError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self, f)
     }
 }
 

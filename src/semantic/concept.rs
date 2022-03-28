@@ -8,7 +8,7 @@ pub enum Concept {
 }
 
 impl Concept {
-    pub(crate) fn from_terminal_token(token: Token) -> Result<Self, ()> {
+    pub fn from_terminal_token(token: Token) -> Result<Self, ()> {
         match token.token_type {
             TokenType::ValidTokenType(valid_token_type) => match valid_token_type {
                 ValidTokenType::Id => Ok(Concept::AtomicConcept(AtomicConcept {
@@ -117,6 +117,10 @@ impl Concept {
             }
         }
     }
+
+    pub fn is_atomic(&self) -> bool {
+        matches!(self, Concept::AtomicConcept(_))
+    }
 }
 
 impl Display for Concept {
@@ -133,11 +137,20 @@ impl Display for Concept {
 }
 #[derive(PartialEq, Clone)]
 pub struct AtomicConcept {
-    pub atomic_concept_type: AtomicConceptType,
-    pub value: String,
+    atomic_concept_type: AtomicConceptType,
+    value: String,
 }
 
 impl AtomicConcept {
+    pub fn new(atomic_concept_type: AtomicConceptType, value: String) -> Self {
+        Self {
+            atomic_concept_type,
+            value,
+        }
+    }
+    pub fn get_atomic_concept_type(&self) -> AtomicConceptType {
+        self.atomic_concept_type.clone()
+    }
     pub fn get_value(&self) -> String {
         self.value.clone()
     }
