@@ -1,12 +1,11 @@
 extern crate core;
-extern crate core;
 
 mod code_generation;
 mod lexical;
 mod semantic;
 mod syntactic;
 
-use crate::semantic::ast::{generate_symbol_tables, AbstractSyntaxTree};
+use crate::semantic::ast::AbstractSyntaxTree;
 use crate::syntactic::parser::Parser;
 use lexical::lexer::Lexer;
 use std::fs;
@@ -19,9 +18,10 @@ fn main() {
     let path = "resource/semantics/test";
     if let Ok(src) = fs::read_to_string(path.to_string() + ".src") {
         lexer.read_source(&src);
-        let (_, ast) = parser.parse(lexer.get_tokens()).unwrap();
+        let (_, concept_tree) = parser.parse(lexer.get_tokens()).unwrap();
+        let ast = AbstractSyntaxTree { 0: concept_tree };
         println!("{}", ast);
-        let tables = generate_symbol_tables(&ast as &AbstractSyntaxTree);
+        let tables = ast.generate_symbol_tables();
         let mut outsymboltables = File::create(path.to_string() + ".outsymboltables").unwrap();
         for (_, table) in tables.iter() {
             outsymboltables.write_all(format!("{}\n", table).as_bytes());

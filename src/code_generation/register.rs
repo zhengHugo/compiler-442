@@ -5,7 +5,7 @@ pub struct RegisterPool {
 impl RegisterPool {
     pub fn new() -> RegisterPool {
         Self {
-            registers: vec![0, 1, 2, 3, 4, 5,6 7, 8, 9, 10, 11, 12, 13, 14, 15],
+            registers: vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
         }
     }
     pub fn get_register(&mut self) -> i32 {

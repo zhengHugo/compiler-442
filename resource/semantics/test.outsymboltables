@@ -1,47 +1,24 @@
 =========================================================
-global:LINEAR
+global:QUADRATIC:evaluate
 ---------------------------------------------------------
 name           | kind           | type                 | link          
 ---------------------------------------------------------
-a              | Variable       | float                | None          
-build          | Function       | LINEAR:float,float   | global:LINEAR:build
-b              | Variable       | float                | None          
-               | Inherits       | POLYNOMIAL           | global:POLYNOMIAL
-evaluate       | Function       | float:float          | global:LINEAR:evaluate
+result         | Variable       | float                | None          
+x              | Parameter      | float                | None          
 =========================================================
 
 =========================================================
-global:QUADRATIC:build
+global:main
 ---------------------------------------------------------
 name           | kind           | type                 | link          
 ---------------------------------------------------------
-A              | Parameter      | float                | None          
-new_function   | Variable       | QUADRATIC            | None          
-B              | Parameter      | float                | None          
-C              | Parameter      | float                | None          
-=========================================================
-
-=========================================================
-global:C
----------------------------------------------------------
-name           | kind           | type                 | link          
----------------------------------------------------------
-a              | Variable       | integer              | None          
-=========================================================
-
-=========================================================
-global
----------------------------------------------------------
-name           | kind           | type                 | link          
----------------------------------------------------------
-main           | Function       | :                    | global:main   
-LINEAR         | Class          | LINEAR               | global:LINEAR 
-f              | Function       | integer:integer,integer | global:f      
-f3             | Function       | integer:integer[integer][integer] | global:f3     
-C              | Class          | C                    | global:C      
-QUADRATIC      | Class          | QUADRATIC            | global:QUADRATIC
-POLYNOMIAL     | Class          | POLYNOMIAL           | global:POLYNOMIAL
-f              | Function       | :integer             | global:f      
+j              | Variable       | integer[integer][integer][integer] | None          
+a              | Variable       | a                    | None          
+counter        | Variable       | integer              | None          
+i              | Variable       | integer[integer][integer] | None          
+f2             | Variable       | QUADRATIC            | None          
+f1             | Variable       | LINEAR               | None          
+c              | Variable       | C                    | None          
 =========================================================
 
 =========================================================
@@ -55,42 +32,12 @@ A              | Parameter      | float                | None
 =========================================================
 
 =========================================================
-global:f
----------------------------------------------------------
-name           | kind           | type                 | link          
----------------------------------------------------------
-j              | Parameter      | integer              | None          
-i              | Parameter      | integer              | None          
-=========================================================
-
-=========================================================
 global:LINEAR:evaluate
 ---------------------------------------------------------
 name           | kind           | type                 | link          
 ---------------------------------------------------------
 x              | Parameter      | float                | None          
 result         | Variable       | float                | None          
-=========================================================
-
-=========================================================
-global:POLYNOMIAL:evaluate
----------------------------------------------------------
-name           | kind           | type                 | link          
----------------------------------------------------------
-x              | Parameter      | float                | None          
-=========================================================
-
-=========================================================
-global:QUADRATIC
----------------------------------------------------------
-name           | kind           | type                 | link          
----------------------------------------------------------
-evaluate       | Function       | float:float          | global:QUADRATIC:evaluate
-a              | Variable       | float                | None          
-build          | Function       | QUADRATIC:float,float,float | global:QUADRATIC:build
-b              | Variable       | float                | None          
-               | Inherits       | POLYNOMIAL           | global:POLYNOMIAL
-c              | Variable       | float                | None          
 =========================================================
 
 =========================================================
@@ -102,17 +49,78 @@ p1             | Parameter      | integer[integer][integer] | None
 =========================================================
 
 =========================================================
-global:main
+global
 ---------------------------------------------------------
 name           | kind           | type                 | link          
 ---------------------------------------------------------
-f2             | Variable       | QUADRATIC            | None          
-counter        | Variable       | integer              | None          
-i              | Variable       | integer[integer][integer] | None          
-c              | Variable       | C                    | None          
-a              | Variable       | a                    | None          
-f1             | Variable       | LINEAR               | None          
-j              | Variable       | integer[integer][integer][integer] | None          
+C              | Class          | C                    | global:C      
+QUADRATIC      | Class          | QUADRATIC            | global:QUADRATIC
+POLYNOMIAL     | Class          | POLYNOMIAL           | global:POLYNOMIAL
+LINEAR         | Class          | LINEAR               | global:LINEAR 
+f              | Function       | :integer             | global:f      
+f3             | Function       | integer:integer[integer][integer] | global:f3     
+main           | Function       | :                    | global:main   
+=========================================================
+
+=========================================================
+global:QUADRATIC:build
+---------------------------------------------------------
+name           | kind           | type                 | link          
+---------------------------------------------------------
+C              | Parameter      | float                | None          
+A              | Parameter      | float                | None          
+B              | Parameter      | float                | None          
+new_function   | Variable       | QUADRATIC            | None          
+=========================================================
+
+=========================================================
+global:f
+---------------------------------------------------------
+name           | kind           | type                 | link          
+---------------------------------------------------------
+j              | Parameter      | integer              | None          
+i              | Parameter      | integer              | None          
+=========================================================
+
+=========================================================
+global:QUADRATIC
+---------------------------------------------------------
+name           | kind           | type                 | link          
+---------------------------------------------------------
+b              | Variable       | float                | None          
+build          | Function       | QUADRATIC:float,float,float | global:QUADRATIC:build
+a              | Variable       | float                | None          
+c              | Variable       | float                | None          
+evaluate       | Function       | float:float          | global:QUADRATIC:evaluate
+               | Inherits       | POLYNOMIAL           | global:POLYNOMIAL
+=========================================================
+
+=========================================================
+global:LINEAR
+---------------------------------------------------------
+name           | kind           | type                 | link          
+---------------------------------------------------------
+b              | Variable       | float                | None          
+a              | Variable       | float                | None          
+build          | Function       | LINEAR:float,float   | global:LINEAR:build
+               | Inherits       | POLYNOMIAL           | global:POLYNOMIAL
+evaluate       | Function       | float:float          | global:LINEAR:evaluate
+=========================================================
+
+=========================================================
+global:C
+---------------------------------------------------------
+name           | kind           | type                 | link          
+---------------------------------------------------------
+a              | Variable       | integer              | None          
+=========================================================
+
+=========================================================
+global:POLYNOMIAL:evaluate
+---------------------------------------------------------
+name           | kind           | type                 | link          
+---------------------------------------------------------
+x              | Parameter      | float                | None          
 =========================================================
 
 =========================================================
@@ -121,14 +129,5 @@ global:POLYNOMIAL
 name           | kind           | type                 | link          
 ---------------------------------------------------------
 evaluate       | Function       | float:float          | global:POLYNOMIAL:evaluate
-=========================================================
-
-=========================================================
-global:QUADRATIC:evaluate
----------------------------------------------------------
-name           | kind           | type                 | link          
----------------------------------------------------------
-result         | Variable       | float                | None          
-x              | Parameter      | float                | None          
 =========================================================
 

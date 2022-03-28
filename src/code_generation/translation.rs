@@ -3,7 +3,6 @@ use crate::semantic::concept::{CompositeConcept, Concept};
 use crate::semantic::symbol_table::SymbolTable;
 use crate::syntactic::tree::NodeId;
 use crate::AbstractSyntaxTree;
-use core::panicking::panic;
 use std::collections::HashMap;
 
 pub fn generate_moon_code(

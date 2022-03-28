@@ -1,6 +1,6 @@
-use crate::semantic::ast::{create_table, AbstractSyntaxTree};
+use crate::semantic::ast::AbstractSyntaxTree;
 use crate::semantic::concept::{AtomicConceptType, CompositeConcept, Concept};
-use crate::semantic::semantic_error::{SemanticErrType, SemanticError};
+use crate::semantic::semantic_error::SemanticError;
 use crate::syntactic::tree::NodeId;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
@@ -8,7 +8,7 @@ use std::fmt::{Display, Formatter};
 #[derive(Debug)]
 pub struct SymbolTable {
     name: String,
-    entries: HashMap<(String, SymbolType), SymbolTableEntry>,
+    entries: HashMap<String, SymbolTableEntry>,
 }
 
 impl SymbolTable {
@@ -27,25 +27,8 @@ impl SymbolTable {
         self.entries.values().cloned().collect()
     }
 
-    pub fn get_all_entries_by_name(&self, entry_name: &str) -> Vec<SymbolTableEntry> {
-        self.entries
-            .values()
-            .cloned()
-            .filter(|entry| entry.name.eq(entry_name))
-            .collect::<Vec<SymbolTableEntry>>()
-    }
-
-    pub fn get_entry_by_name_and_type(
-        &self,
-        entry_name: &str,
-        entry_type: &str,
-    ) -> Option<&SymbolTableEntry> {
-        self.entries.get(&(
-            entry_name.to_string(),
-            SymbolType {
-                name: entry_type.to_string(),
-            },
-        ))
+    pub fn get_entry_by_name(&self, entry_name: &str) -> Option<SymbolTableEntry> {
+        self.entries.get(entry_name).cloned()
     }
 
     pub fn get_all_entries_by_kind(&self, symbol_kind: SymbolKind) -> Vec<SymbolTableEntry> {
@@ -57,54 +40,19 @@ impl SymbolTable {
     }
 
     pub fn insert(&mut self, entry: SymbolTableEntry) -> Option<SymbolTableEntry> {
-        let key = (entry.name.clone(), entry.symbol_type.clone());
-        if matches!(entry.kind, SymbolKind::Function) {
-            // to insert function
-            if self.entries.contains_key(&key) {
-                if self.entries.get(&key).unwrap().link.is_none() {
-                    // existing entry has no link: implementing
-                    self.entries.insert(key, entry)
-                } else {
-                    // existing entry has link: duplicate definition
-                    SemanticError::report_error(&format!(
-                        "function {} of the same type is already defined.",
-                        &entry.name
-                    ));
-                    None
-                }
+        // insert entries other than function
+        if self.entries.contains_key(&entry.name) {
+            // name is already in the table: duplicate definition
+            let existing_entry = self.entries.get(&entry.name).unwrap();
+            if matches!(entry.kind, SymbolKind::Function) && existing_entry.link.is_none() {
+                self.entries.insert(entry.name.clone(), entry)
             } else {
-                if entry.link.is_none() {
-                    // no existing entry and new entry has no link: function decl
-                    if self.entries.keys().any(|key| key.0.eq(&entry.name)) {
-                        SemanticError::report(
-                            SemanticErrType::Warning,
-                            &format!("function {} is overloaded", &entry.name),
-                        );
-                    }
-                    self.entries.insert(key, entry)
-                } else {
-                    return if self.name.eq("global") {
-                        self.entries.insert(key, entry)
-                    } else {
-                        // no existing entry and new entry has link: impl without decl
-                        SemanticError::report_error(&format!(
-                            "definition provided for undeclared function {}. ",
-                            &entry.name
-                        ));
-                        None
-                    };
-                }
-            }
-        } else {
-            // insert entries other than function
-            if self.entries.keys().any(|key| key.0.eq(&entry.name)) {
-                // name is already in the table: duplicate definition
                 SemanticError::report_error(&format!("{} is already defined. ", &entry.name));
                 None
-            } else {
-                // name is new, then key must be new
-                self.entries.insert(key, entry)
             }
+        } else {
+            // name is new, then key must be new
+            self.entries.insert(entry.name.clone(), entry)
         }
     }
 }
@@ -169,7 +117,7 @@ impl SymbolTableEntry {
                     name,
                     kind: SymbolKind::Function,
                     symbol_type: SymbolType::from_node(node, ast), // fParams type
-                    link: Some(create_table(ast, node, table_container, name_prefix)), // funcDef table
+                    link: Some(ast.create_table(node, table_container, name_prefix)), // funcDef table
                 })
             }
             CompositeConcept::FuncDecl => {
@@ -197,7 +145,7 @@ impl SymbolTableEntry {
                     name: name.clone(),
                     kind: SymbolKind::Class,
                     symbol_type: SymbolType { name },
-                    link: Some(create_table(ast, node, table_container, name_prefix)),
+                    link: Some(ast.create_table(node, table_container, name_prefix)),
                 })
             }
             CompositeConcept::VarDecl => {
