@@ -99,7 +99,7 @@ impl SymbolTable {
             // insert entries other than function
             if self.entries.keys().any(|key| key.0.eq(&entry.name)) {
                 // name is already in the table: duplicate definition
-                SemanticError::report_error(&format!("{} is already define. ", &entry.name));
+                SemanticError::report_error(&format!("{} is already defined. ", &entry.name));
                 None
             } else {
                 // name is new, then key must be new

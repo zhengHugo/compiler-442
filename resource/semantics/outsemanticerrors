@@ -1,1 +1,1 @@
-semantic error: Two operands of operator * have different types
+semantic error: function f should be called on parameter integer,integer. Parameter integer is found

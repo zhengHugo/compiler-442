@@ -168,7 +168,7 @@ impl Parser {
                             }
                         }
                         Symbol::ActionSymbol(action_symbol) => {
-                            current_node = parsing_stack.pop().unwrap();
+                            parsing_stack.pop();
                             Self::perform_semantic_action(
                                 &token_index,
                                 &tokens,

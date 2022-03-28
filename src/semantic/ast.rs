@@ -308,7 +308,7 @@ fn refer_type_on_node(
                     refer_type_on_node(assign_children[1], ast, scope, table_container)?;
                 if !left_type.eq(&right_type) {
                     SemanticError::report_error(
-                        "Left and right hand side of assignment operator have different types",
+                        &format!("Left and right hand side of assignment operator have different types: {} vs. {}",left_type, right_type)
                     );
                 }
                 Ok("".to_string())
@@ -388,6 +388,7 @@ fn refer_type_on_node(
                         .get_value();
                     let caller_type =
                         refer_type_on_node(func_call_children[0], ast, scope, table_container)?;
+                    println!("scope = {}", scope);
                     if !caller_type.contains(":") {
                         return Err(SemanticError::report_error(&format!(
                             "{} is not a function",
