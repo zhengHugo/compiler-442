@@ -36,6 +36,11 @@ ArithExpr -> Term RightRecArithExpr
 Term -> Factor RightRecTerm
 Factor -> ValidTokenType(Integer) A
 match Integer
+RightRecTerm -> MultOp Factor O RightRecTerm
+MultOp -> ValidTokenType(Mult) P
+match Mult
+Factor -> ValidTokenType(Integer) A
+match Integer
 RightRecTerm -> EPSILON
 RightRecArithExpr -> EPSILON
 Expr2 -> EPSILON

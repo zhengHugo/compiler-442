@@ -5,7 +5,7 @@ use crate::syntactic::tree::NodeId;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SymbolTable {
     name: String,
     entries: HashMap<String, SymbolTableEntry>,
@@ -314,6 +314,11 @@ pub struct SymbolType {
 }
 
 impl SymbolType {
+    pub fn new(type_value: &str) -> Self {
+        Self {
+            value: type_value.to_string(),
+        }
+    }
     pub fn from_node(node: NodeId, ast: &AbstractSyntaxTree) -> Self {
         let concept = ast.get_node_value(node);
         let name = match concept {

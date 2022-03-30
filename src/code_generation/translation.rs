@@ -1,26 +1,10 @@
-use crate::code_generation::register::RegisterPool;
+use crate::code_generation::register_pool::RegisterPool;
+use crate::code_generation::temp_var_name_pool::TempVarNamePool;
 use crate::semantic::concept::{AtomicConceptType, CompositeConcept, Concept};
-use crate::semantic::symbol_table::SymbolTable;
+use crate::semantic::symbol_table::{SymbolKind, SymbolTable, SymbolTableEntry, SymbolType};
 use crate::syntactic::tree::NodeId;
 use crate::AbstractSyntaxTree;
 use std::collections::HashMap;
-
-pub fn generate_moon_code(
-    ast: AbstractSyntaxTree,
-    table_container: HashMap<String, SymbolTable>,
-) -> String {
-    let root = ast.get_root();
-    let mut translator: Translator = Translator {
-        ast,
-        table_container,
-        exec_code: String::new(),
-        data_code: String::new(),
-        register_pool: RegisterPool::new(),
-        stack_offset: 0,
-    };
-    translator.translate(root, "global");
-    format!("{}{}", translator.exec_code, translator.data_code)
-}
 
 pub struct Translator {
     ast: AbstractSyntaxTree,
@@ -28,9 +12,11 @@ pub struct Translator {
     exec_code: String,
     data_code: String,
     register_pool: RegisterPool,
+    temp_var_name_pool: TempVarNamePool,
     stack_offset: u32,
 }
 impl Translator {
+    // translate statements
     pub fn translate(&mut self, node: NodeId, table_name: &str) {
         let node_value = self.ast.get_node_value(node);
         match node_value {
@@ -49,15 +35,106 @@ impl Translator {
         }
     }
 
+    // translate statements with return value: returns the temp_var_name stored in this table
+    pub fn translate_with_result(&mut self, node: NodeId, table_name: &str) -> String {
+        let node_value = self.ast.get_node_value(node);
+        match node_value {
+            Concept::AtomicConcept(ac) => match ac.get_atomic_concept_type() {
+                AtomicConceptType::IntLit => {
+                    let reg = self.register_pool.get_register();
+                    let int_val = ac.get_value();
+                    let mut table = self.table_container.get(table_name).unwrap().clone();
+                    let (temp_var_name, _) = self.allocate_temp_var(4, table);
+                    // load into register
+                    self.write_exec_code("", "addi", &format!("r{}, r0, {}", reg, int_val));
+                    // allocate a temp var and store it
+                    self.write_exec_code(
+                        "",
+                        "sw",
+                        &format!("-{}(r1), r{}", self.stack_offset, reg),
+                    );
+                    self.register_pool.give_back(reg);
+                    return temp_var_name;
+                }
+                // AtomicConceptType::Id => {}
+                // AtomicConceptType::FloatLit => {}
+                // AtomicConceptType::RelOp => {}
+                // AtomicConceptType::MultiOp => {}
+                // AtomicConceptType::AddOp => {}
+                // AtomicConceptType::Sign => {}
+                _ => panic!("Unhandled ac in translate_with_result: {}", ac),
+            },
+            Concept::CompositeConcept(cc) => match cc {
+                CompositeConcept::AddExpr
+                | CompositeConcept::MultExpr
+                | CompositeConcept::RelExpr => self.translate_binary_expr(node, table_name),
+                // CompositeConcept::Dot => {}
+                // CompositeConcept::Var => {}
+                // CompositeConcept::FuncCall => {}
+                // CompositeConcept::NotExpr => {}
+                // CompositeConcept::SignedExpr => {}
+                // CompositeConcept::Type => {}
+                _ => panic!("Unhandled cc in translate_with_result: {}", cc),
+            },
+        }
+    }
+
+    // returns a temp var name
+    fn translate_binary_expr(&mut self, node: NodeId, table_name: &str) -> String {
+        let reg1 = self.register_pool.get_register();
+        let reg2 = self.register_pool.get_register();
+        let reg3 = self.register_pool.get_register();
+        let expr_children = self.ast.get_children(node);
+        let operand1_name = self.translate_with_result(expr_children[0], table_name);
+        let operand2_name = self.translate_with_result(expr_children[2], table_name);
+        let operator = self
+            .ast
+            .get_node_value(expr_children[1])
+            .get_atomic_concept()
+            .get_value();
+
+        let mut table = self
+            .table_container
+            .get(table_name)
+            .expect(&format!("Cannot find table {}", table_name))
+            .clone();
+        let operand1_offset = table.get_entry_by_name(&operand1_name).unwrap().offset;
+        let operand2_offset = table.get_entry_by_name(&operand2_name).unwrap().offset;
+
+        // grow stack for a temp var
+        // TODO: only integer expression is supported
+        let (temp_var_name, _) = self.allocate_temp_var(4, table);
+
+        self.write_exec_code("", "lw", &format!("r{}, -{}(r1)", reg1, operand1_offset));
+        self.write_exec_code("", "lw", &format!("r{}, -{}(r1)", reg2, operand2_offset));
+        match operator.as_str() {
+            "+" => self.write_exec_code("", "add", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "-" => self.write_exec_code("", "sub", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "or" => self.write_exec_code("", "or", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "*" => self.write_exec_code("", "mul", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "/" => self.write_exec_code("", "div", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "and" => self.write_exec_code("", "and", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "==" => self.write_exec_code("", "ceq", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            ">=" => self.write_exec_code("", "cge", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            ">" => self.write_exec_code("", "cgt", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "<=" => self.write_exec_code("", "cle", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "<" => self.write_exec_code("", "clt", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "<>" => self.write_exec_code("", "cne", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            _ => panic!("Unhandled binary operator {}", operator),
+        }
+        self.write_exec_code("", "sw", &format!("-{}(r1), r{}", self.stack_offset, reg3));
+        self.register_pool.give_back(reg3);
+        self.register_pool.give_back(reg2);
+        self.register_pool.give_back(reg1);
+        temp_var_name
+    }
+
     fn translate_write(&mut self, node: NodeId, table_name: &str) {
         // 1. store the value to write into -8(r14)
         // 2. prepare a buffer to convert it into a string
         // 3. call 'intstr' to perform the conversion.
         // 4. the  pointer to the result string is in r13
         // 5. call 'putstr' to write the string
-        {
-            self.write_data_code("buf", "res", "20 % reserve a buffer used by intstr");
-        }
         let write_children = self.ast.get_children(node);
         let elem_to_write = self.ast.get_node_value(write_children[0]);
         match elem_to_write {
@@ -138,28 +215,21 @@ impl Translator {
                 lhs, table_name
             ));
 
-        // TODO: assume rhs is an literal
-        let rhs_concept = self.ast.get_node_value(assign_children[1]);
-        match rhs_concept {
-            Concept::AtomicConcept(ac) => match ac.get_atomic_concept_type() {
-                AtomicConceptType::Id => {}
-                AtomicConceptType::FloatLit => {}
-                AtomicConceptType::IntLit => {
-                    let rhs_value = ac.get_value();
-                    let reg = self.register_pool.get_register();
-                    // TODO: assume positive number
-                    self.write_exec_code("", "addi", &format!("r{}, r0, {}", reg, rhs_value));
-                    self.write_exec_code("", "sw", &format!("-{}(r1), r{}", lhs_entry.offset, reg));
-                    self.register_pool.give_back(reg);
-                }
-                _ => panic!("Unexpected assignment rhs: {}", rhs_concept),
-            },
-            Concept::CompositeConcept(_) => {
-                todo!("expr on assignment rhs");
-                todo!("var on assignment rhs");
-                todo!("func call on assignment rhs");
-            }
-        }
+        // After an assignment, stack size should not change
+        // Store the stack size before compute the rhs so that we can
+        // drop the temp values
+        let init_stack_offset = self.stack_offset;
+        let temp_var_name = self.translate_with_result(assign_children[1], table_name);
+        let table = self.table_container.get(table_name).unwrap().clone();
+        let temp_var_offset = table
+            .get_entry_by_name(&temp_var_name)
+            .expect(&format!("Cannot find entry {}", temp_var_name))
+            .offset;
+        let reg = self.register_pool.get_register();
+        self.write_exec_code("", "lw", &format!("r{}, -{}(r1)", reg, temp_var_offset));
+        self.write_exec_code("", "sw", &format!("-{}(r1), r{}", lhs_entry.offset, reg));
+        self.register_pool.give_back(reg);
+        self.stack_offset = init_stack_offset;
     }
 
     fn translate_prog(&mut self, prog_node: NodeId, table_name: &str) {
@@ -213,6 +283,9 @@ impl Translator {
             self.write_exec_code("", "addi", "r1, r0, topaddr    % frame pointer");
             self.translate(children[3], &format!("{}:{}", table_name, "main"));
             self.write_exec_code("", "hlt", "% =====end of program====");
+
+            // reserve a buffer for write
+            self.write_data_code("buf", "res", "20 % reserve a buffer used by intstr");
         }
     }
 
@@ -230,4 +303,39 @@ impl Translator {
         self.data_code
             .push_str(&format!("{:<10} {:<10} {}\n", tag, op, remain));
     }
+
+    fn allocate_temp_var(&mut self, size: u32, mut table: SymbolTable) -> (String, u32) {
+        let temp_var_name = self
+            .temp_var_name_pool
+            .get_next_unique_name_in_table(&table);
+        table.insert(SymbolTableEntry {
+            name: temp_var_name.clone(),
+            kind: SymbolKind::Variable,
+            symbol_type: SymbolType::new("integer"),
+            link: None,
+            size,
+            offset: self.stack_offset + size,
+        });
+        self.grow_stack(size);
+        self.table_container.insert(table.get_table_name(), table);
+        (temp_var_name, self.stack_offset)
+    }
+}
+
+pub fn generate_moon_code(
+    ast: AbstractSyntaxTree,
+    table_container: HashMap<String, SymbolTable>,
+) -> String {
+    let root = ast.get_root();
+    let mut translator: Translator = Translator {
+        ast,
+        table_container,
+        exec_code: String::new(),
+        data_code: String::new(),
+        register_pool: RegisterPool::new(),
+        temp_var_name_pool: TempVarNamePool::new(),
+        stack_offset: 0,
+    };
+    translator.translate(root, "global");
+    format!("{}{}", translator.exec_code, translator.data_code)
 }
