@@ -24,6 +24,37 @@ Type -> ValidTokenType(KwInteger) A A3
 match KwInteger
 ReptVarDecl4 -> EPSILON
 match Semi
+ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
+VarDeclOrStat -> Statement
+Statement -> ValidTokenType(Id) A StatementIdNest ValidTokenType(Semi)
+match Id
+StatementIdNest -> F AssignOp Expr H
+AssignOp -> ValidTokenType(Assign)
+match Assign
+Expr -> ArithExpr Expr2
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> ValidTokenType(Integer) A
+match Integer
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+Expr2 -> EPSILON
+match Semi
+ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
+VarDeclOrStat -> Statement
+Statement -> ValidTokenType(KwWrite) ValidTokenType(OpenPar) Expr Y ValidTokenType(ClosePar) ValidTokenType(Semi)
+match KwWrite
+match OpenPar
+Expr -> ArithExpr Expr2
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> ValidTokenType(Integer) A
+match Integer
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+Expr2 -> EPSILON
+match ClosePar
+match Semi
 ReptFuncBody1 -> EPSILON
 match CloseCuBr
 ReptProg0 -> EPSILON

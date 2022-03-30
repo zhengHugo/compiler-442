@@ -32,7 +32,8 @@ fn main() {
         // let mut outast_file = File::create(path.to_string() + ".outast").unwrap();
         // outast_file.write_all(format!("{}", ast).as_bytes());
         let output_code = generate_moon_code(ast, tables);
-        println!("{}", output_code);
+        let mut output_code_file = File::create(path.to_string() + ".m").unwrap();
+        output_code_file.write_all(output_code.as_bytes());
     } else {
         panic!("Cannot find source code");
     }

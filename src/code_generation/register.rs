@@ -5,7 +5,12 @@ pub struct RegisterPool {
 impl RegisterPool {
     pub fn new() -> RegisterPool {
         Self {
-            registers: vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+            // temporary registers from 1 to 12
+            // r0 is constant 0
+            // r13 for function return value
+            // r14 for stack pointer
+            // r15 for jump back link (to jump back after a func call)
+            registers: vec![12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2],
         }
     }
     pub fn get_register(&mut self) -> i32 {
