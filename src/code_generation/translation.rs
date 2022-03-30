@@ -51,12 +51,12 @@ impl Translator {
                     self.write_exec_code(
                         "",
                         "sw",
-                        &format!("-{}(r1), r{}", self.stack_offset, reg),
+                        &format!("-{}(r12), r{}", self.stack_offset, reg),
                     );
                     self.register_pool.give_back(reg);
-                    return temp_var_name;
+                    temp_var_name
                 }
-                // AtomicConceptType::Id => {}
+                AtomicConceptType::Id => ac.get_value(),
                 // AtomicConceptType::FloatLit => {}
                 // AtomicConceptType::RelOp => {}
                 // AtomicConceptType::MultiOp => {}
@@ -69,7 +69,13 @@ impl Translator {
                 | CompositeConcept::MultExpr
                 | CompositeConcept::RelExpr => self.translate_binary_expr(node, table_name),
                 // CompositeConcept::Dot => {}
-                // CompositeConcept::Var => {}
+                CompositeConcept::Var => {
+                    let var_children = self.ast.get_children(node);
+
+                    // TODO: assume var is simple id with no array sizes
+                    // recursive call with this id
+                    self.translate_with_result(var_children[0], table_name)
+                }
                 // CompositeConcept::FuncCall => {}
                 // CompositeConcept::NotExpr => {}
                 // CompositeConcept::SignedExpr => {}
@@ -105,8 +111,8 @@ impl Translator {
         // TODO: only integer expression is supported
         let (temp_var_name, _) = self.allocate_temp_var(4, table);
 
-        self.write_exec_code("", "lw", &format!("r{}, -{}(r1)", reg1, operand1_offset));
-        self.write_exec_code("", "lw", &format!("r{}, -{}(r1)", reg2, operand2_offset));
+        self.write_exec_code("", "lw", &format!("r{}, -{}(r12)", reg1, operand1_offset));
+        self.write_exec_code("", "lw", &format!("r{}, -{}(r12)", reg2, operand2_offset));
         match operator.as_str() {
             "+" => self.write_exec_code("", "add", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
             "-" => self.write_exec_code("", "sub", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
@@ -122,7 +128,7 @@ impl Translator {
             "<>" => self.write_exec_code("", "cne", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
             _ => panic!("Unhandled binary operator {}", operator),
         }
-        self.write_exec_code("", "sw", &format!("-{}(r1), r{}", self.stack_offset, reg3));
+        self.write_exec_code("", "sw", &format!("-{}(r12), r{}", self.stack_offset, reg3));
         self.register_pool.give_back(reg3);
         self.register_pool.give_back(reg2);
         self.register_pool.give_back(reg1);
@@ -137,24 +143,14 @@ impl Translator {
         // 5. call 'putstr' to write the string
         let write_children = self.ast.get_children(node);
         let elem_to_write = self.ast.get_node_value(write_children[0]);
+        let reg = self.register_pool.get_register();
         match elem_to_write {
             Concept::AtomicConcept(ac) => match ac.get_atomic_concept_type() {
-                AtomicConceptType::Id => {}
-                AtomicConceptType::FloatLit => {}
                 AtomicConceptType::IntLit => {
-                    let reg = self.register_pool.get_register();
                     let int_val = ac.get_value();
-                    self.write_exec_code("", "% load integer to be print into param reg", "");
+                    self.write_exec_code("", "% load integer to print into param reg", "");
                     self.write_exec_code("", "addi", &format!("r{}, r0, {}", reg, int_val));
                     self.write_exec_code("", "sw", &format!("-8(r14), r{}", reg));
-                    self.write_exec_code("", "% load the buffer pointer into param reg", "");
-                    self.write_exec_code("", "addi", &format!("r{}, r0, {}", reg, "buf"));
-                    self.write_exec_code("", "sw", &format!("-12(r14), r{}", reg));
-                    self.write_exec_code("", "% call intstr to convert int to str", "");
-                    self.write_exec_code("", "jl", "r15, intstr");
-                    self.write_exec_code("", "% load the result into param reg", "");
-                    self.write_exec_code("", "sw", "-8(r14), r13");
-                    self.write_exec_code("", "jl", "r15, putstr");
                 }
                 _ => panic!("Unhandled ac in translate_write(): {}", ac),
             },
@@ -162,13 +158,24 @@ impl Translator {
                 match cc {
                     CompositeConcept::Dot => {}
                     CompositeConcept::Var => {
+                        let var_name = self.translate_with_result(write_children[0], table_name);
+                        let table = self.table_container.get(table_name).unwrap();
+                        let entry_offset = table.get_entry_by_name(&var_name).unwrap().offset;
+
+                        self.write_exec_code("", "% load var to print into param reg", "");
+                        self.write_exec_code(
+                            "",
+                            "lw",
+                            &format!("r{}, -{}(r12)", reg, entry_offset),
+                        );
+                        self.write_exec_code("", "sw", &format!("-8(r14), r{}", reg));
+
                         /*
                         If we have a variable in 'write':
                         Then look it up in the table and get its offset;
                             load the value into a temp register
                             store the value into -8(r14)
                         */
-                        todo!();
                     }
                     CompositeConcept::FuncCall => {
                         /*
@@ -186,15 +193,23 @@ impl Translator {
                         */
                         todo!();
                     }
-                    CompositeConcept::AddExpr => {}
-                    CompositeConcept::MultExpr => {}
-                    CompositeConcept::NotExpr => {}
-                    CompositeConcept::SignedExpr => {}
+                    // CompositeConcept::AddExpr => {}
+                    // CompositeConcept::MultExpr => {}
+                    // CompositeConcept::NotExpr => {}
+                    // CompositeConcept::SignedExpr => {}
                     _ => panic!("Unhandled cc in translate_write(): {}", cc),
                 }
             }
         }
-        // 1. load the value to right into register
+        self.write_exec_code("", "% load the buffer pointer into param reg", "");
+        self.write_exec_code("", "addi", &format!("r{}, r0, {}", reg, "buf"));
+        self.write_exec_code("", "sw", &format!("-12(r14), r{}", reg));
+        self.write_exec_code("", "% call intstr to convert int to str", "");
+        self.write_exec_code("", "jl", "r15, intstr");
+        self.write_exec_code("", "% load the result into param reg", "");
+        self.write_exec_code("", "sw", "-8(r14), r13");
+        self.write_exec_code("", "jl", "r15, putstr");
+        self.register_pool.give_back(reg);
     }
 
     fn translate_assign(&mut self, node: NodeId, table_name: &str) {
@@ -226,8 +241,8 @@ impl Translator {
             .expect(&format!("Cannot find entry {}", temp_var_name))
             .offset;
         let reg = self.register_pool.get_register();
-        self.write_exec_code("", "lw", &format!("r{}, -{}(r1)", reg, temp_var_offset));
-        self.write_exec_code("", "sw", &format!("-{}(r1), r{}", lhs_entry.offset, reg));
+        self.write_exec_code("", "lw", &format!("r{}, -{}(r12)", reg, temp_var_offset));
+        self.write_exec_code("", "sw", &format!("-{}(r12), r{}", lhs_entry.offset, reg));
         self.register_pool.give_back(reg);
         self.stack_offset = init_stack_offset;
     }
@@ -280,12 +295,12 @@ impl Translator {
             self.write_exec_code("", "entry", "% =====program entry=====");
             self.write_exec_code("", "align", "% following instructions align");
             self.write_exec_code("", "addi", "r14, r0, topaddr    % stack pointer");
-            self.write_exec_code("", "addi", "r1, r0, topaddr    % frame pointer");
+            self.write_exec_code("", "addi", "r12, r0, topaddr    % frame pointer");
             self.translate(children[3], &format!("{}:{}", table_name, "main"));
             self.write_exec_code("", "hlt", "% =====end of program====");
 
             // reserve a buffer for write
-            self.write_data_code("buf", "res", "20 % reserve a buffer used by intstr");
+            self.write_data_code("buf", "res", "32 % reserve a buffer used by intstr");
         }
     }
 

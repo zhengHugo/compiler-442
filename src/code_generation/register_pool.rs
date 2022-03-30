@@ -10,7 +10,7 @@ impl RegisterPool {
             // r13 for function return value
             // r14 for stack pointer
             // r15 for jump back link (to jump back after a func call)
-            registers: vec![12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2],
+            registers: vec![11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         }
     }
     pub fn get_register(&mut self) -> i32 {
