@@ -177,7 +177,7 @@ impl SymbolTableEntry {
                     kind: SymbolKind::Variable,
                     symbol_type: SymbolType::from_node(node, ast),
                     link: None,
-                    size: SymbolTableEntry::get_var_size(node, ast),
+                    size: SymbolTableEntry::get_size_from_var_decl(node, ast),
                     offset: 0,
                 })
             }
@@ -249,20 +249,37 @@ impl SymbolTableEntry {
         }
     }
 
-    fn get_var_size(var_decl_node: NodeId, ast: &AbstractSyntaxTree) -> u32 {
+    fn get_size_from_var_decl(var_decl_node: NodeId, ast: &AbstractSyntaxTree) -> u32 {
         let var_decl_children = ast.get_children(var_decl_node);
         let var_type = SymbolType::from_node(var_decl_node, ast).get_type_value();
-        if var_type.contains("[") {
-            // TODO: var is an array size
-            0
-        } else {
-            // var is simple type
-            match var_type.as_str() {
-                "integer" | "float" => 4,
-                _ => {
-                    todo!("class size")
+        if let Some(i) = var_type.find("[") {
+            let base_type: String = var_type.chars().take(i).collect();
+            let mut array_sizes: Vec<u32> = vec![];
+            let mut buf = String::new();
+            for c in var_type.chars().skip(i) {
+                match c {
+                    '[' => continue,
+                    ']' => {
+                        array_sizes.push(buf.parse::<u32>().unwrap());
+                        buf.clear();
+                    }
+                    _ => buf.push(c),
                 }
             }
+            let base_var_size = Self::get_base_var_size(&base_type);
+            array_sizes.iter().fold(1, |x, y| x * y) * base_var_size
+            // TODO: var is an array size
+        } else {
+            // var is simple type
+            Self::get_base_var_size(&var_type)
+        }
+    }
+
+    fn get_base_var_size(base_type: &str) -> u32 {
+        match base_type {
+            "integer" => 4,
+            "float" => 8,
+            _ => todo!("class size"),
         }
     }
 }

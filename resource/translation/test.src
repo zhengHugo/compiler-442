@@ -1,8 +1,7 @@
 func main() -> void {
-    let a: integer;
-    let b: integer;
-    a = 2;
-    b = a * 3;
-    write(a);
-    write(b);
+    let a: integer[5];
+    a[2] = 3;
+    a[3] = 4;
+    write(a[2]);
+    write(a[3]);
 }

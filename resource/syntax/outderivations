@@ -22,23 +22,30 @@ match Id
 match Colon
 Type -> ValidTokenType(KwInteger) A A3
 match KwInteger
-ReptVarDecl4 -> EPSILON
-match Semi
-ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
-VarDeclOrStat -> VarDecl
-VarDecl -> ValidTokenType(KwLet) ValidTokenType(Id) A ValidTokenType(Colon) Type E ReptVarDecl4 A1 A7 ValidTokenType(Semi)
-match KwLet
-match Id
-match Colon
-Type -> ValidTokenType(KwInteger) A A3
-match KwInteger
+ReptVarDecl4 -> ArraySize ReptVarDecl4
+ArraySize -> ValidTokenType(OpenSqBr) ArraySize2
+match OpenSqBr
+ArraySize2 -> ValidTokenType(Integer) A ValidTokenType(CloseSqBr)
+match Integer
+match CloseSqBr
 ReptVarDecl4 -> EPSILON
 match Semi
 ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
 VarDeclOrStat -> Statement
 Statement -> ValidTokenType(Id) A StatementIdNest ValidTokenType(Semi)
 match Id
-StatementIdNest -> F AssignOp Expr H
+StatementIdNest -> F E Index ReptIdNest1 C D StatementIdNest3
+Index -> ValidTokenType(OpenSqBr) ArithExpr ValidTokenType(CloseSqBr)
+match OpenSqBr
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> ValidTokenType(Integer) A
+match Integer
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+match CloseSqBr
+ReptIdNest1 -> EPSILON
+StatementIdNest3 -> AssignOp Expr H
 AssignOp -> ValidTokenType(Assign)
 match Assign
 Expr -> ArithExpr Expr2
@@ -54,20 +61,23 @@ ReptFuncBody1 -> VarDeclOrStat ReptFuncBody1
 VarDeclOrStat -> Statement
 Statement -> ValidTokenType(Id) A StatementIdNest ValidTokenType(Semi)
 match Id
-StatementIdNest -> F AssignOp Expr H
+StatementIdNest -> F E Index ReptIdNest1 C D StatementIdNest3
+Index -> ValidTokenType(OpenSqBr) ArithExpr ValidTokenType(CloseSqBr)
+match OpenSqBr
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> ValidTokenType(Integer) A
+match Integer
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+match CloseSqBr
+ReptIdNest1 -> EPSILON
+StatementIdNest3 -> AssignOp Expr H
 AssignOp -> ValidTokenType(Assign)
 match Assign
 Expr -> ArithExpr Expr2
 ArithExpr -> Term RightRecArithExpr
 Term -> Factor RightRecTerm
-Factor -> ValidTokenType(Id) A Factor2 ReptVarOrFuncCall
-match Id
-Factor2 -> E ReptIdNest1 C D
-ReptIdNest1 -> EPSILON
-ReptVarOrFuncCall -> EPSILON
-RightRecTerm -> MultOp Factor O RightRecTerm
-MultOp -> ValidTokenType(Mult) P
-match Mult
 Factor -> ValidTokenType(Integer) A
 match Integer
 RightRecTerm -> EPSILON
@@ -85,6 +95,16 @@ Term -> Factor RightRecTerm
 Factor -> ValidTokenType(Id) A Factor2 ReptVarOrFuncCall
 match Id
 Factor2 -> E ReptIdNest1 C D
+ReptIdNest1 -> Index ReptIdNest1
+Index -> ValidTokenType(OpenSqBr) ArithExpr ValidTokenType(CloseSqBr)
+match OpenSqBr
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> ValidTokenType(Integer) A
+match Integer
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+match CloseSqBr
 ReptIdNest1 -> EPSILON
 ReptVarOrFuncCall -> EPSILON
 RightRecTerm -> EPSILON
@@ -103,6 +123,16 @@ Term -> Factor RightRecTerm
 Factor -> ValidTokenType(Id) A Factor2 ReptVarOrFuncCall
 match Id
 Factor2 -> E ReptIdNest1 C D
+ReptIdNest1 -> Index ReptIdNest1
+Index -> ValidTokenType(OpenSqBr) ArithExpr ValidTokenType(CloseSqBr)
+match OpenSqBr
+ArithExpr -> Term RightRecArithExpr
+Term -> Factor RightRecTerm
+Factor -> ValidTokenType(Integer) A
+match Integer
+RightRecTerm -> EPSILON
+RightRecArithExpr -> EPSILON
+match CloseSqBr
 ReptIdNest1 -> EPSILON
 ReptVarOrFuncCall -> EPSILON
 RightRecTerm -> EPSILON

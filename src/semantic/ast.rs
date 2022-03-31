@@ -795,8 +795,6 @@ impl AbstractSyntaxTree {
             },
         }
     }
-
-    pub fn translate_func_call(&self, children: &Vec<NodeId>) {}
 }
 
 impl Display for AbstractSyntaxTree {

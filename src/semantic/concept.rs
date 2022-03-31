@@ -113,7 +113,10 @@ impl Concept {
         match self {
             Concept::AtomicConcept(ac) => (*ac).clone(),
             Concept::CompositeConcept(_) => {
-                panic!("Trying to get call get_atomic_concept on a composite concept")
+                panic!(
+                    "Trying to get call get_atomic_concept on a composite concept: {}",
+                    self
+                )
             }
         }
     }

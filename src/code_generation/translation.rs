@@ -1,6 +1,7 @@
 use crate::code_generation::register_pool::RegisterPool;
 use crate::code_generation::temp_var_name_pool::TempVarNamePool;
 use crate::semantic::concept::{AtomicConceptType, CompositeConcept, Concept};
+use crate::semantic::semantic_util::var_node_utils;
 use crate::semantic::symbol_table::{SymbolKind, SymbolTable, SymbolTableEntry, SymbolType};
 use crate::syntactic::tree::NodeId;
 use crate::AbstractSyntaxTree;
@@ -33,106 +34,6 @@ impl Translator {
                 _ => panic!("Unhandled composite concept {}", cc),
             },
         }
-    }
-
-    // translate statements with return value: returns the temp_var_name stored in this table
-    pub fn translate_with_result(&mut self, node: NodeId, table_name: &str) -> String {
-        let node_value = self.ast.get_node_value(node);
-        match node_value {
-            Concept::AtomicConcept(ac) => match ac.get_atomic_concept_type() {
-                AtomicConceptType::IntLit => {
-                    let reg = self.register_pool.get_register();
-                    let int_val = ac.get_value();
-                    let mut table = self.table_container.get(table_name).unwrap().clone();
-                    let (temp_var_name, _) = self.allocate_temp_var(4, table);
-                    // load into register
-                    self.write_exec_code("", "addi", &format!("r{}, r0, {}", reg, int_val));
-                    // allocate a temp var and store it
-                    self.write_exec_code(
-                        "",
-                        "sw",
-                        &format!("-{}(r12), r{}", self.stack_offset, reg),
-                    );
-                    self.register_pool.give_back(reg);
-                    temp_var_name
-                }
-                AtomicConceptType::Id => ac.get_value(),
-                // AtomicConceptType::FloatLit => {}
-                // AtomicConceptType::RelOp => {}
-                // AtomicConceptType::MultiOp => {}
-                // AtomicConceptType::AddOp => {}
-                // AtomicConceptType::Sign => {}
-                _ => panic!("Unhandled ac in translate_with_result: {}", ac),
-            },
-            Concept::CompositeConcept(cc) => match cc {
-                CompositeConcept::AddExpr
-                | CompositeConcept::MultExpr
-                | CompositeConcept::RelExpr => self.translate_binary_expr(node, table_name),
-                // CompositeConcept::Dot => {}
-                CompositeConcept::Var => {
-                    let var_children = self.ast.get_children(node);
-
-                    // TODO: assume var is simple id with no array sizes
-                    // recursive call with this id
-                    self.translate_with_result(var_children[0], table_name)
-                }
-                // CompositeConcept::FuncCall => {}
-                // CompositeConcept::NotExpr => {}
-                // CompositeConcept::SignedExpr => {}
-                // CompositeConcept::Type => {}
-                _ => panic!("Unhandled cc in translate_with_result: {}", cc),
-            },
-        }
-    }
-
-    // returns a temp var name
-    fn translate_binary_expr(&mut self, node: NodeId, table_name: &str) -> String {
-        let reg1 = self.register_pool.get_register();
-        let reg2 = self.register_pool.get_register();
-        let reg3 = self.register_pool.get_register();
-        let expr_children = self.ast.get_children(node);
-        let operand1_name = self.translate_with_result(expr_children[0], table_name);
-        let operand2_name = self.translate_with_result(expr_children[2], table_name);
-        let operator = self
-            .ast
-            .get_node_value(expr_children[1])
-            .get_atomic_concept()
-            .get_value();
-
-        let mut table = self
-            .table_container
-            .get(table_name)
-            .expect(&format!("Cannot find table {}", table_name))
-            .clone();
-        let operand1_offset = table.get_entry_by_name(&operand1_name).unwrap().offset;
-        let operand2_offset = table.get_entry_by_name(&operand2_name).unwrap().offset;
-
-        // grow stack for a temp var
-        // TODO: only integer expression is supported
-        let (temp_var_name, _) = self.allocate_temp_var(4, table);
-
-        self.write_exec_code("", "lw", &format!("r{}, -{}(r12)", reg1, operand1_offset));
-        self.write_exec_code("", "lw", &format!("r{}, -{}(r12)", reg2, operand2_offset));
-        match operator.as_str() {
-            "+" => self.write_exec_code("", "add", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
-            "-" => self.write_exec_code("", "sub", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
-            "or" => self.write_exec_code("", "or", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
-            "*" => self.write_exec_code("", "mul", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
-            "/" => self.write_exec_code("", "div", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
-            "and" => self.write_exec_code("", "and", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
-            "==" => self.write_exec_code("", "ceq", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
-            ">=" => self.write_exec_code("", "cge", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
-            ">" => self.write_exec_code("", "cgt", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
-            "<=" => self.write_exec_code("", "cle", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
-            "<" => self.write_exec_code("", "clt", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
-            "<>" => self.write_exec_code("", "cne", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
-            _ => panic!("Unhandled binary operator {}", operator),
-        }
-        self.write_exec_code("", "sw", &format!("-{}(r12), r{}", self.stack_offset, reg3));
-        self.register_pool.give_back(reg3);
-        self.register_pool.give_back(reg2);
-        self.register_pool.give_back(reg1);
-        temp_var_name
     }
 
     fn translate_write(&mut self, node: NodeId, table_name: &str) {
@@ -214,37 +115,62 @@ impl Translator {
 
     fn translate_assign(&mut self, node: NodeId, table_name: &str) {
         let assign_children = self.ast.get_children(node);
-        // TODO: assume lhs is an id
-        let lhs = self
-            .ast
-            .get_node_value(assign_children[0])
-            .get_atomic_concept()
-            .get_value();
-        let lhs_entry = self
-            .table_container
-            .get(table_name)
-            .unwrap()
-            .get_entry_by_name(&lhs)
-            .expect(&format!(
-                "Cannot find symbol {} in table {}",
-                lhs, table_name
-            ));
 
+        // Compute rhs and load into reg
         // After an assignment, stack size should not change
         // Store the stack size before compute the rhs so that we can
         // drop the temp values
         let init_stack_offset = self.stack_offset;
-        let temp_var_name = self.translate_with_result(assign_children[1], table_name);
+        let rhs_temp_var_name = self.translate_with_result(assign_children[1], table_name);
         let table = self.table_container.get(table_name).unwrap().clone();
-        let temp_var_offset = table
-            .get_entry_by_name(&temp_var_name)
-            .expect(&format!("Cannot find entry {}", temp_var_name))
+        let rhs_offset = table
+            .get_entry_by_name(&rhs_temp_var_name)
+            .expect(&format!("Cannot find entry {}", rhs_temp_var_name))
             .offset;
         let reg = self.register_pool.get_register();
-        self.write_exec_code("", "lw", &format!("r{}, -{}(r12)", reg, temp_var_offset));
-        self.write_exec_code("", "sw", &format!("-{}(r12), r{}", lhs_entry.offset, reg));
+        self.write_exec_code("", "lw", &format!("r{}, -{}(r12)", reg, rhs_offset));
+
+        // TODO: assume lhs is an id
+        // get the address of lhs
+        let lhs_concept = self.ast.get_node_value(assign_children[0]);
+        let lhs_offset: u32;
+        match lhs_concept {
+            Concept::AtomicConcept(ac) => {
+                if matches!(ac.get_atomic_concept_type(), AtomicConceptType::Id) {
+                    let lhs = ac.get_value();
+                    let lhs_entry = self
+                        .table_container
+                        .get(table_name)
+                        .unwrap()
+                        .get_entry_by_name(&lhs)
+                        .expect(&format!(
+                            "Cannot find symbol {} in table {}",
+                            lhs, table_name
+                        ));
+                    lhs_offset = lhs_entry.offset;
+                    self.write_exec_code("", "sw", &format!("-{}(r12), r{}", lhs_offset, reg));
+                }
+            }
+            Concept::CompositeConcept(cc) => {
+                match cc {
+                    CompositeConcept::Var => {
+                        // get lhs offset from a var
+                        let reg_target_address =
+                            self.get_var_array_elem_address(assign_children[0], table_name);
+                        self.write_exec_code(
+                            "",
+                            "sw",
+                            &format!("0(r{}), r{}", reg_target_address, reg),
+                        );
+                    }
+                    _ => panic!("{}", cc),
+                }
+            }
+        }
+
         self.register_pool.give_back(reg);
         self.stack_offset = init_stack_offset;
+        self.write_exec_code("", "subi", &format!("r14, r12, {}", self.stack_offset));
     }
 
     fn translate_prog(&mut self, prog_node: NodeId, table_name: &str) {
@@ -304,6 +230,137 @@ impl Translator {
         }
     }
 
+    // translate statements with return value: returns the temp_var_name stored in this table
+    // returns a temp var name
+    pub fn translate_with_result(&mut self, node: NodeId, table_name: &str) -> String {
+        let node_value = self.ast.get_node_value(node);
+        match node_value {
+            Concept::AtomicConcept(ac) => match ac.get_atomic_concept_type() {
+                AtomicConceptType::IntLit => {
+                    self.translate_with_result_int_lit(ac.get_value(), table_name)
+                }
+                AtomicConceptType::Id => ac.get_value(),
+                // AtomicConceptType::FloatLit => {}
+                // AtomicConceptType::RelOp => {}
+                // AtomicConceptType::MultiOp => {}
+                // AtomicConceptType::AddOp => {}
+                // AtomicConceptType::Sign => {}
+                _ => panic!("Unhandled ac in translate_with_result: {}", ac),
+            },
+            Concept::CompositeConcept(cc) => match cc {
+                CompositeConcept::AddExpr
+                | CompositeConcept::MultExpr
+                | CompositeConcept::RelExpr => {
+                    self.translate_with_result_binary_expr(node, table_name)
+                }
+                // CompositeConcept::Dot => {}
+                CompositeConcept::Var => self.translate_with_result_var(node, table_name),
+                // CompositeConcept::FuncCall => {}
+                // CompositeConcept::NotExpr => {}
+                // CompositeConcept::SignedExpr => {}
+                // CompositeConcept::Type => {}
+                _ => panic!("Unhandled cc in translate_with_result: {}", cc),
+            },
+        }
+    }
+
+    fn translate_with_result_int_lit(&mut self, val: String, table_name: &str) -> String {
+        let reg = self.register_pool.get_register();
+        let mut table = self.table_container.get(table_name).unwrap().clone();
+        let (temp_var_name, _) = self.allocate_temp_var(4, table);
+        // load into register
+        self.write_exec_code("", "addi", &format!("r{}, r0, {}", reg, val));
+        // allocate a temp var and store it
+        self.write_exec_code("", "sw", &format!("-{}(r12), r{}", self.stack_offset, reg));
+        self.register_pool.give_back(reg);
+        temp_var_name
+    }
+
+    fn translate_with_result_var(&mut self, var_node: NodeId, table_name: &str) -> String {
+        let var_children = self.ast.get_children(var_node);
+
+        let index_nodes = self.ast.get_children(var_children[1]);
+        if index_nodes.is_empty() {
+            self.translate_with_result(var_children[0], table_name)
+        } else {
+            let base_size = var_node_utils::get_base_size(
+                var_node,
+                table_name,
+                &self.ast,
+                &self.table_container,
+            );
+            let table = self.table_container.get(table_name).unwrap();
+            let (temp_var_name, temp_var_offset) = self.allocate_temp_var(base_size, table.clone());
+            let reg_target_addr = self.get_var_array_elem_address(var_node, table_name);
+
+            let reg_temp_var = self.register_pool.get_register();
+            // reg_temp_var <- Mem[reg_target_addr]
+            // temp_var <- reg_temp_var
+            self.write_exec_code(
+                "",
+                "lw",
+                &format!("r{}, 0(r{})", reg_temp_var, reg_target_addr),
+            );
+            self.write_exec_code(
+                "",
+                "sw",
+                &format!("-{}(r12), r{}", temp_var_offset, reg_temp_var),
+            );
+
+            self.register_pool.give_back(reg_target_addr);
+            temp_var_name
+        }
+    }
+
+    fn translate_with_result_binary_expr(&mut self, node: NodeId, table_name: &str) -> String {
+        let reg1 = self.register_pool.get_register();
+        let reg2 = self.register_pool.get_register();
+        let reg3 = self.register_pool.get_register();
+        let expr_children = self.ast.get_children(node);
+        let operand1_name = self.translate_with_result(expr_children[0], table_name);
+        let operand2_name = self.translate_with_result(expr_children[2], table_name);
+        let operator = self
+            .ast
+            .get_node_value(expr_children[1])
+            .get_atomic_concept()
+            .get_value();
+
+        let mut table = self
+            .table_container
+            .get(table_name)
+            .expect(&format!("Cannot find table {}", table_name))
+            .clone();
+        let operand1_offset = table.get_entry_by_name(&operand1_name).unwrap().offset;
+        let operand2_offset = table.get_entry_by_name(&operand2_name).unwrap().offset;
+
+        // grow stack for a temp var
+        // TODO: only integer expression is supported
+        let (temp_var_name, _) = self.allocate_temp_var(4, table);
+
+        self.write_exec_code("", "lw", &format!("r{}, -{}(r12)", reg1, operand1_offset));
+        self.write_exec_code("", "lw", &format!("r{}, -{}(r12)", reg2, operand2_offset));
+        match operator.as_str() {
+            "+" => self.write_exec_code("", "add", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "-" => self.write_exec_code("", "sub", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "or" => self.write_exec_code("", "or", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "*" => self.write_exec_code("", "mul", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "/" => self.write_exec_code("", "div", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "and" => self.write_exec_code("", "and", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "==" => self.write_exec_code("", "ceq", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            ">=" => self.write_exec_code("", "cge", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            ">" => self.write_exec_code("", "cgt", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "<=" => self.write_exec_code("", "cle", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "<" => self.write_exec_code("", "clt", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            "<>" => self.write_exec_code("", "cne", &format!("r{}, r{}, r{}", reg3, reg1, reg2)),
+            _ => panic!("Unhandled binary operator {}", operator),
+        }
+        self.write_exec_code("", "sw", &format!("-{}(r12), r{}", self.stack_offset, reg3));
+        self.register_pool.give_back(reg3);
+        self.register_pool.give_back(reg2);
+        self.register_pool.give_back(reg1);
+        temp_var_name
+    }
+
     fn grow_stack(&mut self, size: u32) {
         self.stack_offset += size;
         self.write_exec_code("", "subi", &format!("r14, r14, {}", size));
@@ -334,6 +391,67 @@ impl Translator {
         self.grow_stack(size);
         self.table_container.insert(table.get_table_name(), table);
         (temp_var_name, self.stack_offset)
+    }
+
+    fn load_var_to_reg(&mut self, var_name: String, reg: i32, table_name: &str) {}
+
+    // generate code to get var array access offset
+    // returns a register that stores the address of the array element
+    fn get_var_array_elem_address(&mut self, var_node: NodeId, table_name: &str) -> i32 {
+        // TODO: assume base_var is a id, not a dot
+        let base_size =
+            var_node_utils::get_base_size(var_node, table_name, &self.ast, &self.table_container);
+
+        // TODO: assume one-dimensional array
+        // get base offset
+        let var_entry =
+            var_node_utils::get_entry(var_node, table_name, &self.ast, &self.table_container);
+        let base_offset = var_entry.offset;
+        // reg_base_offset <- base_offset
+        let reg_base_offset = self.register_pool.get_register();
+        self.write_exec_code(
+            "",
+            "addi",
+            &format!("r{}, r0, {}", reg_base_offset, base_offset),
+        );
+
+        // reg_offset <- index
+        let reg_offset = self.register_pool.get_register();
+        let var_children = self.ast.get_children(var_node);
+        let indices_nodes = self.ast.get_children(var_children[1]);
+        let index_var_name = self.translate_with_result(indices_nodes[0], table_name);
+        let table = self.table_container.get(table_name).unwrap();
+        let index_var_entry = table.get_entry_by_name(&index_var_name).unwrap();
+        let index_var_offset = index_var_entry.offset;
+        self.write_exec_code(
+            "",
+            "lw",
+            &format!("r{}, -{}(r12)", reg_offset, index_var_offset),
+        );
+        // reg_offset <- reg_offset * base_size
+        self.write_exec_code(
+            "",
+            "muli",
+            &format!("r{}, r{}, {}", reg_offset, reg_offset, base_size),
+        );
+
+        // reg_offset <- reg_base_offset - reg_offset
+        self.write_exec_code(
+            "",
+            "sub",
+            &format!("r{}, r{}, r{}", reg_offset, reg_base_offset, reg_offset),
+        );
+
+        // reg_target_addr = r12 - reg_offset
+        let reg_target_addr = self.register_pool.get_register();
+        self.write_exec_code(
+            "",
+            "sub",
+            &format!("r{}, r12, r{}", reg_target_addr, reg_offset),
+        );
+        self.register_pool.give_back(reg_base_offset);
+        self.register_pool.give_back(reg_offset);
+        reg_target_addr
     }
 }
 
